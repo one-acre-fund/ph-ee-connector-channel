@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.1.4-mifos-1.5.4
+        * [SER-2097] - Upgrade zeebe client version
+
 ## OAF Version 1.1.3-mifos-1.5.4
         * [SER-2493] - Merge upstream v1.5.4 to fix issue of payer and payee being an array for Paybill flow
 ## OAF Version 1.1.2-mifos-1.5.3
