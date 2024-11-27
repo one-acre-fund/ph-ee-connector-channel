@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.1.5-mifos-1.5.4
+        * [SER-3220] Update actuator endpoints
+
 ## OAF Version 1.1.4-mifos-1.5.4
         * [SER-2097] - Upgrade zeebe client version
 
