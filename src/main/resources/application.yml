@@ -70,6 +70,10 @@ rest:
     header: "Basic Y2xpZW50Og=="
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
   endpoint:
     health:
       probes:

@@ -17,7 +17,7 @@ repositories {
     }
 
     maven {
-        url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
+        url = uri('https://secure-api.oneacrefund.org/s3/artifacts')
     }
 }
 
@@ -55,6 +55,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.22'
     implementation 'com.googlecode.libphonenumber:carrier:1.206'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.8.0'
 }
 
 group = 'org.mifos'
