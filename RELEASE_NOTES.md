@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.1.6-mifos-1.5.4
+        * [CP-3303] Add support for validation response message
+
 ## OAF Version 1.1.5-mifos-1.5.4
         * [SER-3220] Update actuator endpoints
 

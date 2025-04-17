@@ -28,4 +28,5 @@ public class ValidationResponseDTO {
     private String clientName;
     @JsonProperty("customData")
     private List<CustomData> customData;
+    private String message;
 }
