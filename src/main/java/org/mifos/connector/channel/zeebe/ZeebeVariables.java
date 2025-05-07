@@ -27,4 +27,5 @@ public class ZeebeVariables {
     public static final String NOTE = "note";
     public static final String PAYMENT_SCHEME = "paymentScheme";
     public static final String CLIENT_CORRELATION_ID = "clientCorrelationId";
+    public static final String CALLBACK_URL = "callbackUrl";
 }

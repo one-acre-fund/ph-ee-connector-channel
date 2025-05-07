@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.1.7-mifos-1.5.4
+        * [CP-3556] Add support for dynamic callback URLs in transaction requests
+
 ## OAF Version 1.1.6-mifos-1.5.4
         * [CP-3303] Add support for validation response message
 

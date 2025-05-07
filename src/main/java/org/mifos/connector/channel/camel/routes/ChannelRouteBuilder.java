@@ -192,6 +192,16 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                 })
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(400))
                 .stop();
+
+        onException(IllegalArgumentException.class)
+            .process(e -> {
+                JSONObject response = new JSONObject();
+                response.put("message", e.getProperty(Exchange.EXCEPTION_CAUGHT, IllegalArgumentException.class).getMessage());
+                e.getIn().setBody(response.toString());
+                e.removeProperties("*");
+            })
+            .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(400))
+            .stop();
     }
 
     private void indexRoutes(){
@@ -464,7 +474,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     extraVariables.put("isNotificationsFailureEnabled", isNotificationFailureServiceEnabled);
                     extraVariables.put("timer",timer);
                     extraVariables.put("clientCorrelationId", clientCorrelationId);
-
+                    amsUtils.addCallbackUrlToVariables(customDataString, extraVariables);
 
                     String transactionId = zeebeProcessStarter.startMpesaZeebeWorkflow(tenantSpecificBpmn,
                             channelRequestBodyString,
@@ -472,6 +482,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     JSONObject response = new JSONObject();
                     response.put("transactionId", transactionId);
                     exchange.getIn().setBody(response.toString());
+                    exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
                 });
     }
 

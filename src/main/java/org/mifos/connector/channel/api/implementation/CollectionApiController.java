@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.mifos.connector.channel.api.definition.CollectionApi;
-import org.mifos.connector.channel.GSMA_API.GsmaP2PResponseDto;
 import org.mifos.connector.channel.model.CollectionRequestDTO;
 import org.mifos.connector.channel.utils.Headers;
 import org.mifos.connector.channel.utils.SpringWrapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.concurrent.*;
 
@@ -25,7 +25,7 @@ public class CollectionApiController implements CollectionApi {
     private ObjectMapper objectMapper;
 
     @Override
-    public GsmaP2PResponseDto collection(String tenant, String correlationId, String paymentScheme, CollectionRequestDTO requestBody) throws ExecutionException, InterruptedException, JsonProcessingException {
+    public ResponseEntity<?> collection(String tenant, String correlationId, String paymentScheme, CollectionRequestDTO requestBody) throws ExecutionException, InterruptedException, JsonProcessingException {
         Headers headers = new Headers.HeaderBuilder()
                 .addHeader("Platform-TenantId", tenant)
                 .addHeader("X-CorrelationID", correlationId)
@@ -36,6 +36,8 @@ public class CollectionApiController implements CollectionApi {
         Exchange ex = producerTemplate.send("direct:post-collection", exchange);
 
         String body = exchange.getIn().getBody(String.class);
-        return objectMapper.readValue(body, GsmaP2PResponseDto.class);    }
+        int statusCode = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+        return ResponseEntity.status(statusCode).body(objectMapper.readTree(body));
+    }
 
 }

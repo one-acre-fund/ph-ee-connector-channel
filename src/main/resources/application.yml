@@ -69,6 +69,11 @@ rest:
     host: http://localhost:8080
     header: "Basic Y2xpZW50Og=="
 
+callback:
+  url:
+    restrict: false
+    allowed-domains: oneacrefund.org
+
 management:
   endpoints:
     web:
