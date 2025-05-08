@@ -22,6 +22,12 @@ steps:
     inputs:
       VariableName: Revision
 
+  - task: UseJavaVersion@1
+    displayName: "Use Java 11"
+    inputs:
+      versionSpec: '11'
+      architecture: 'x64'
+
   - script: |
       java -version
       echo "JAVA_HOME=$JAVA_HOME"
