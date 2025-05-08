@@ -22,10 +22,11 @@ steps:
     inputs:
       VariableName: Revision
 
-  - script: |
-      echo "Switching to Java 11"
-      echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME_11_X64"
+  - task: JavaToolInstaller@0
     displayName: 'Use Java 11'
+    inputs:
+      versionSpec: '11'
+      jdkArchitectureOption: 'x64'
 
   - script: |
       VERSION_TAG=`./gradlew properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}'`
