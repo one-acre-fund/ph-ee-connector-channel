@@ -28,4 +28,11 @@ public class ZeebeVariables {
     public static final String PAYMENT_SCHEME = "paymentScheme";
     public static final String CLIENT_CORRELATION_ID = "clientCorrelationId";
     public static final String CALLBACK_URL = "callbackUrl";
+    public static final String WEBHOOK_PAYLOAD = "webhookPayload";
+    public static final String EXTERNAL_ID = "externalId";
+    public static final String AMOUNT = "amount";
+    public static final String CURRENCY = "currency";
+    public static final String IS_NOTIFICATIONS_SUCCESS_ENABLED = "isNotificationsSuccessEnabled";
+    public static final String IS_NOTIFICATIONS_FAILURE_ENABLED = "isNotificationsFailureEnabled";
+    public static final String VIRTUAL_ACCOUNT_NUMBER = "virtualAccountNumber";
 }
