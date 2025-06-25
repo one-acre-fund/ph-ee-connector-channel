@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+import static org.mifos.connector.channel.camel.config.CamelProperties.AMS_ID_VALUE_PLACEHOLDER;
 import static org.mifos.connector.channel.camel.config.CamelProperties.MONNIFY_PROVIDER_NAME;
 import static org.mifos.connector.channel.camel.config.CamelProperties.SQUAD_PROVIDER_NAME;
 
@@ -54,7 +55,7 @@ public class LiteChannelRequest {
         PartyIdInfo payerPartyIdInfo = new PartyIdInfo(squadProps.getPayerIdType(), request.getVirtualAccountNumber());
         PartyData payer = new PartyData(payerPartyIdInfo);
 
-        PartyIdInfo payeePartyIdInfo = new PartyIdInfo(squadProps.getAmsIdentifier(), request.getVirtualAccountNumber());
+        PartyIdInfo payeePartyIdInfo = new PartyIdInfo(squadProps.getAmsIdentifier(), AMS_ID_VALUE_PLACEHOLDER);
         PartyData payee = new PartyData(payeePartyIdInfo);
 
         Amount amount = new Amount(request.getPrincipalAmount(), request.getCurrency());
@@ -75,7 +76,7 @@ public class LiteChannelRequest {
         PartyIdInfo payerPartyIdInfo = new PartyIdInfo(monnifyProps.getPayerIdType(), requestData.getPaymentReference());
         PartyData payer = new PartyData(payerPartyIdInfo);
 
-        PartyIdInfo payeePartyIdInfo = new PartyIdInfo(monnifyProps.getAmsIdentifier(), requestData.getPaymentReference());
+        PartyIdInfo payeePartyIdInfo = new PartyIdInfo(monnifyProps.getAmsIdentifier(), AMS_ID_VALUE_PLACEHOLDER);
         PartyData payee = new PartyData(payeePartyIdInfo);
 
         Amount amount = new Amount(requestData.getAmountPaid(), requestData.getCurrency());

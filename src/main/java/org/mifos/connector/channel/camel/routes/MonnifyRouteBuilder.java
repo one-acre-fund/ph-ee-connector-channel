@@ -19,7 +19,7 @@ import java.util.Map;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.mifos.connector.channel.camel.config.CamelProperties.MONNIFY_SIGNATURE_HEADER;
-import static org.mifos.connector.channel.camel.config.CamelProperties.SQUAD_PROVIDER_NAME;
+import static org.mifos.connector.channel.camel.config.CamelProperties.MONNIFY_PROVIDER_NAME;
 import static org.mifos.connector.channel.utils.PosPaymentUtils.isValidSignature;
 import static org.mifos.connector.channel.zeebe.ZeebeVariables.AMOUNT;
 import static org.mifos.connector.channel.zeebe.ZeebeVariables.AMS;
@@ -90,7 +90,7 @@ public class MonnifyRouteBuilder extends RouteBuilder {
                 MonnifyTransactionRequest request = exchange.getIn().getBody(MonnifyTransactionRequest.class);
                 String transactionReference = request.getEventData().getTransactionReference();
                 Map<String, Object> variables = new HashMap<>();
-                variables.put(PAYMENT_SCHEME, SQUAD_PROVIDER_NAME);
+                variables.put(PAYMENT_SCHEME, MONNIFY_PROVIDER_NAME);
                 variables.put(WEBHOOK_PAYLOAD, exchange.getProperty(WEBHOOK_PAYLOAD));
                 variables.put(EXTERNAL_ID, transactionReference);
                 variables.put(AMS, monnifyProps.getAmsValue());

@@ -15,4 +15,5 @@ public class CamelProperties {
     public static final String HMAC_SHA512 = "HmacSHA512";
     public static final String MONNIFY_SIGNATURE_HEADER = "monnify-signature";
     public static final String MONNIFY_PROVIDER_NAME = "monnify";
+    public static final String AMS_ID_VALUE_PLACEHOLDER = "000000";
 }
