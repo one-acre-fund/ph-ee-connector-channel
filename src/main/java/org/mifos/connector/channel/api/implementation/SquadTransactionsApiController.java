@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.mifos.connector.channel.camel.config.CamelProperties.SQUAD_SIGNATURE_HEADER;
 
+/**
+ * Controller for handling Squad transactions.
+ */
 @RestController
 public class SquadTransactionsApiController implements SquadTransactionsApi {
 

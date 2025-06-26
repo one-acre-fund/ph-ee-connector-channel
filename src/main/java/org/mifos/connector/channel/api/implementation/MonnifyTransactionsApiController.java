@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.mifos.connector.channel.camel.config.CamelProperties.MONNIFY_SIGNATURE_HEADER;
 
+/**
+ * Controller for handling Monnify transactions.
+ */
 @RestController
 public class MonnifyTransactionsApiController implements MonnifyTransactionsApi {
 
