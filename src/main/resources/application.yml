@@ -113,3 +113,21 @@ redis:
 
 # Maps the network provider to the payment scheme
 payment-schemes: '{"safaricom": "mpesa", "mtn": "momo", "airtel": "airtel"}'
+
+squad:
+  secret-key: abc
+  ams-identifier: FINERACTACCOUNTID
+  ams-value: fineract
+  flow: pos_payment-oaf
+  payer-id-type: VIRTUAL_ACCOUNT_NUMBER
+  success-notifications-enabled: false
+  failure-notifications-enabled: false
+
+monnify:
+  secret-key: xyz
+  ams-identifier: FINERACTACCOUNTID
+  ams-value: fineract
+  flow: pos_payment-oaf
+  payer-id-type: VIRTUAL_ACCOUNT_NUMBER
+  success-notifications-enabled: false
+  failure-notifications-enabled: false

@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.2.0-mifos-1.5.4
+        * [CP-3559] Add support for handling Squad & Monnify POS transactions
+
 ## OAF Version 1.1.7-mifos-1.5.4
         * [CP-3556] Add support for dynamic callback URLs in transaction requests
 
