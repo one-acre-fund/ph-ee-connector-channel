@@ -16,4 +16,7 @@ public class CamelProperties {
     public static final String MONNIFY_SIGNATURE_HEADER = "monnify-signature";
     public static final String MONNIFY_PROVIDER_NAME = "monnify";
     public static final String AMS_ID_VALUE_PLACEHOLDER = "000000";
+    public static final String PAGE = "page";
+    public static final String HAS_MORE = "hasMore";
+    public static final String AUTHORIZATION = "Authorization";
 }

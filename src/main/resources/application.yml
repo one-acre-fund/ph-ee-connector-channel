@@ -122,6 +122,10 @@ squad:
   payer-id-type: VIRTUAL_ACCOUNT_NUMBER
   success-notifications-enabled: false
   failure-notifications-enabled: false
+  base-url: "https://sandbox-api-d.squadco.com"
+  logs-endpoint: "/virtual-account/webhook/logs"
+  logs-page-size: 100
+  token: sandbox_sk_blablabla
 
 monnify:
   secret-key: xyz

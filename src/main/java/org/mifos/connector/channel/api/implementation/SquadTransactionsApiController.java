@@ -2,6 +2,7 @@ package org.mifos.connector.channel.api.implementation;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.support.DefaultExchange;
 import org.mifos.connector.channel.api.definition.SquadTransactionsApi;
 import org.mifos.connector.channel.model.SquadTransactionResponse;
 import org.mifos.connector.channel.utils.Headers;
@@ -34,5 +35,14 @@ public class SquadTransactionsApiController implements SquadTransactionsApi {
         int statusCode = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
         SquadTransactionResponse response = exchange.getIn().getBody(SquadTransactionResponse.class);
         return ResponseEntity.status(statusCode).body(response);
+    }
+
+    @Override
+    public ResponseEntity<SquadTransactionResponse> syncTransactions(String body) {
+        DefaultExchange exchange = new DefaultExchange(producerTemplate.getCamelContext());
+        exchange.getIn().setBody(body);
+        producerTemplate.send("direct:squad-transactions-sync", exchange);
+        int statusCode = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+        return ResponseEntity.status(statusCode).body(exchange.getIn().getBody(SquadTransactionResponse.class));
     }
 }

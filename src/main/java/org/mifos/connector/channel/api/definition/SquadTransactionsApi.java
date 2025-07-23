@@ -23,4 +23,13 @@ public interface SquadTransactionsApi {
     @PostMapping("/squad/transactions")
     ResponseEntity<SquadTransactionResponse> processTransaction(@RequestHeader(value = SQUAD_SIGNATURE_HEADER) String signature,
                                                         @RequestBody String body);
+
+    /**
+     * Synchronizes Squad transactions by fetching missed Squad webhook logs and reconciling the transactions.
+     *
+     * @param body JSON request body.
+     * @return {@link ResponseEntity} containing {@link SquadTransactionResponse} with the result of the synchronization.
+     */
+    @PostMapping("/squad/transactions/sync")
+    ResponseEntity<SquadTransactionResponse> syncTransactions(@RequestBody String body);
 }
