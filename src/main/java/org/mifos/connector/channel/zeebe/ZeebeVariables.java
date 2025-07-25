@@ -35,4 +35,6 @@ public class ZeebeVariables {
     public static final String IS_NOTIFICATIONS_SUCCESS_ENABLED = "isNotificationsSuccessEnabled";
     public static final String IS_NOTIFICATIONS_FAILURE_ENABLED = "isNotificationsFailureEnabled";
     public static final String VIRTUAL_ACCOUNT_NUMBER = "virtualAccountNumber";
+    public static final String IS_MISSED_WEBHOOK_NOTIFICATION = "isMissedWebhookNotification";
+    public static final String CORRELATION_ID = "correlationId";
 }

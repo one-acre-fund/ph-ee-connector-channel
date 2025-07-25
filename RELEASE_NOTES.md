@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.3.0-mifos-1.5.4
+        * [CP-3489] Add support for reconciling missed Squad transactions
+
 ## OAF Version 1.2.0-mifos-1.5.4
         * [CP-3559] Add support for handling Squad & Monnify POS transactions
 

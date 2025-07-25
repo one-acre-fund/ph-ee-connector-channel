@@ -56,6 +56,7 @@ public class ZeebeWorkers {
         workerSendPayeeSuccessToChannel();
         workerSendPayeeFailureToChannel();
         workerInvokeAcknowledgementWorkflows();
+        workerDeleteWebhookLog();
     }
 
     private void workerSendErrorToChannel(){
@@ -226,5 +227,28 @@ public class ZeebeWorkers {
                 .name("send-payee-failure-to-channel")
                 .maxJobsActive(workerMaxJobs)
                 .open();
+    }
+
+    /**
+     * Worker to delete webhook logs.
+     */
+    private void workerDeleteWebhookLog() {
+        zeebeClient.newWorker()
+            .jobType("delete-webhook-log")
+            .handler((client, job) -> {
+                logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
+                Map<String, Object> variables = job.getVariablesAsMap();
+
+                Exchange exchange = new DefaultExchange(camelContext);
+                exchange.setProperty(TRANSACTION_ID, variables.get(EXTERNAL_ID));
+                producerTemplate.send("direct:delete-webhook-log", exchange);
+
+                client.newCompleteCommand(job.getKey())
+                    .send()
+                    .join();
+            })
+            .name("delete-webhook-log")
+            .maxJobsActive(workerMaxJobs)
+            .open();
     }
 }
