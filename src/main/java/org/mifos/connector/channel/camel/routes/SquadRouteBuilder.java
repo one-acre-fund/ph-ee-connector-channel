@@ -138,7 +138,7 @@ public class SquadRouteBuilder extends RouteBuilder {
                 .removeHeader("*")
                 .setHeader(Exchange.HTTP_METHOD, constant("GET"))
                 .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
-                .setHeader(AUTHORIZATION, simple("Bearer " + squadProps.getToken()))
+                .setHeader(AUTHORIZATION, simple("Bearer ${header.District-Token}"))
                 .toD(squadProps.getBaseUrl() + squadProps.getLogsEndpoint()
                     + "?page=${exchangeProperty[page]}&perPage=" + squadProps.getLogsPageSize()
                 + "&bridgeEndpoint=true&throwExceptionOnFailure=false")

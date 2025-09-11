@@ -135,3 +135,6 @@ monnify:
   payer-id-type: VIRTUAL_ACCOUNT_NUMBER
   success-notifications-enabled: false
   failure-notifications-enabled: false
+
+executor:
+  thread-pool-size: 5

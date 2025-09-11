@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 /**
  * DTO for Squad transactions synchronization request.
@@ -13,4 +14,6 @@ import javax.validation.constraints.NotBlank;
 public class SquadTransactionsSyncRequest {
     @NotBlank
     private String correlationId;
+
+    private List<String> districtTokens;
 }
