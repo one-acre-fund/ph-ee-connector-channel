@@ -15,5 +15,5 @@ public class SquadTransactionsSyncRequest {
     @NotBlank
     private String correlationId;
 
-    private List<String> districtTokens;
+    private List<@NotBlank String> districtTokens;
 }

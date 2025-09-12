@@ -37,4 +37,5 @@ public class ZeebeVariables {
     public static final String VIRTUAL_ACCOUNT_NUMBER = "virtualAccountNumber";
     public static final String IS_MISSED_WEBHOOK_NOTIFICATION = "isMissedWebhookNotification";
     public static final String CORRELATION_ID = "correlationId";
+    public static final String DISTRICT_TOKEN = "District-Token";
 }

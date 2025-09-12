@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 @Configuration
 public class ExecutorConfig {
 
-    @Value("${executor.thread.pool.size:5}")
+    @Value("${executor.thread-pool-size:5}")
     private int threadPoolSize;
 
     @Bean

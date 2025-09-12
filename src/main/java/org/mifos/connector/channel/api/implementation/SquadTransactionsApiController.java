@@ -49,7 +49,8 @@ public class SquadTransactionsApiController implements SquadTransactionsApi {
 
     @Override
     public ResponseEntity<SquadTransactionResponseList> syncTransactions(SquadTransactionsSyncRequest body) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.squadTransactionService.syncTransactions(body));
+        final var response = this.squadTransactionService.syncTransactions(body);
+        return ResponseEntity.status(response.getResponseCode()).body(response);
     }
 
 
