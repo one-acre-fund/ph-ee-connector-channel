@@ -33,7 +33,7 @@ public class SquadTransactionServiceImpl implements SquadTransactionService {
 
     @Override
     public SquadTransactionResponseList syncTransactions(SquadTransactionsSyncRequest transactionsSyncRequest) {
-        List<Future<SquadTransactionResponse>> futures = new ArrayList<>();
+        final java.util.Map<Future<SquadTransactionResponse>, String> futures = new java.util.LinkedHashMap<>();
 
         final var correlationId = transactionsSyncRequest.getCorrelationId();
         final String correlationPayloadJson;
@@ -43,20 +43,21 @@ public class SquadTransactionServiceImpl implements SquadTransactionService {
                throw new IllegalStateException("Failed to serialize correlation payload", e);
             }
 
-        for (final var districtToken : transactionsSyncRequest.getDistrictTokens()) {
-            futures.add(executorService.submit(() -> syncTransactionsByToken(correlationPayloadJson, districtToken)));
-
+        for (final var districtToken : transactionsSyncRequest.getDistrictTokens().entrySet()) {
+            futures.put(executorService.submit(() -> syncTransactionsByToken(correlationPayloadJson, districtToken.getValue())), districtToken.getKey());
         }
 
 
         // Collect results
         List<SquadTransactionResponse> squadTransactionResponses = new ArrayList<>();
-        for (final var future : futures) {
+        for (final var entry : futures.entrySet()) {
+            final var future = entry.getKey();
+            final var district = entry.getValue();
             try {
                 squadTransactionResponses.add(future.get());  // Blocking call (waits for task to finish)
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // Restore interrupt status
-                log.error(e.getMessage(), e);
+                log.error("Interrupted while syncing district: {}", district, e);
                 break;
             } catch (ExecutionException e) {
                 log.error(e.getMessage(), e);

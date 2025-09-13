@@ -141,7 +141,6 @@ public class SquadRouteBuilder extends RouteBuilder {
                 .setHeader(Exchange.HTTP_METHOD, constant("GET"))
                 .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
                 .setHeader(AUTHORIZATION, simple("Bearer ${exchangeProperty[districtToken]}"))
-                .log( "Squad transactions sync requestjjhhdhdhshsh: ${headers}")
                 .toD(squadProps.getBaseUrl() + squadProps.getLogsEndpoint()
                     + "?page=${exchangeProperty[page]}&perPage=" + squadProps.getLogsPageSize()
                 + "&bridgeEndpoint=true&throwExceptionOnFailure=false")
