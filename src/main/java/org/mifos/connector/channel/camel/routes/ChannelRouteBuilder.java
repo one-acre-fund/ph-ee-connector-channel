@@ -41,6 +41,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -50,8 +52,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static java.util.Base64.getEncoder;
 import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.StreamSupport.stream;
 import static org.mifos.connector.channel.camel.config.CamelProperties.*;
@@ -86,7 +88,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
     private String transactionRequestFlow;
     private String partyRegistration;
     private String mpesaFlow;
-    private String restAuthHost;
+    private String operationsAuthEndpoint;
     private String operationsUrl;
     private Boolean operationsAuthEnabled;
     private String transfersEndpoint;
@@ -105,13 +107,15 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
     private Map<String, String> paymentSchemes;
     private static final String DEFAULT_COLLECTION_PAYMENT_SCHEME = "mpesa";
 
+    public final Map<String, String> tokenCache = new ConcurrentHashMap<>();
+
     public ChannelRouteBuilder(@Value("#{'${dfspids}'.split(',')}") List<String> dfspIds,
                                @Value("${bpmn.flows.payment-transfer}") String paymentTransferFlow,
                                @Value("${bpmn.flows.special-payment-transfer}") String specialPaymentTransferFlow,
                                @Value("${bpmn.flows.transaction-request}") String transactionRequestFlow,
                                @Value("${bpmn.flows.party-registration}") String partyRegistration,
                                @Value("${bpmn.flows.mpesa-flow}") String mpesaFlow,
-                               @Value("${rest.authorization.host}") String restAuthHost,
+                               @Value("${operations.endpoint.auth}") String operationsAuthEndpoint,
                                @Value("${operations.url}") String operationsUrl,
                                @Value("${operations.auth-enabled}") Boolean operationsAuthEnabled,
                                @Value("${operations.endpoint.transfers}") String transfersEndpoint,
@@ -140,7 +144,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
         this.objectMapper = objectMapper;
         this.clientProperties = clientProperties;
         this.restTemplate = restTemplate;
-        this.restAuthHost = restAuthHost;
+        this.operationsAuthEndpoint = operationsAuthEndpoint;
         this.operationsUrl = operationsUrl;
         this.transfersEndpoint = transfersEndpoint;
         this.transactionEndpoint = transactionEndpoint;
@@ -221,15 +225,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     }
                     Client client = clientProperties.getClient(tenantId);
 
-                    HttpEntity<String> entity = buildHeader(tenantId, null);
-                    if(operationsAuthEnabled){
-                        UriComponentsBuilder builder = buildParams(client);
-                        ResponseEntity<String> exchange = callAuthApi(builder,entity);
-                        JSONObject jsonObject = new JSONObject(exchange.getBody());
-                        String token = jsonObject.getString("access_token");
-
-                        entity = buildHeader(tenantId, token);
-                    }
+                    HttpEntity<MultiValueMap<String, String>> entity = buildHttpEntity(tenantId, client);
 
                     String transactionId = e.getIn().getHeader("transactionId", String.class);
                     ResponseEntity<String> exchange = restTemplate.exchange(operationsUrl + "/transfers?page=0&size=20&transactionId=" + transactionId, HttpMethod.GET, entity, String.class);
@@ -280,20 +276,9 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                         throw new RuntimeException("Requested tenant " + tenantId + " not configured in the connector!");}
                     Client client = clientProperties.getClient(tenantId);
                     String requestType = getRequestType(e.getIn().getHeader("requestType", String.class));
-                    HttpEntity<String> entity = buildHeader(tenantId, null);
-                    ResponseEntity<String> authExchange;
 
-                    if(operationsAuthEnabled){
-                        UriComponentsBuilder builder = buildParams(client);
-                         authExchange = callAuthApi(builder,entity);
-                    }
-                    else {
-                        authExchange = restTemplate.exchange(restAuthHost + "/oauth/token?grant_type=client_credentials", HttpMethod.POST, entity, String.class);
-                    }
+                    HttpEntity<MultiValueMap<String, String>> entity = buildHttpEntity(tenantId, client);
 
-                    JSONObject jsonObject = new JSONObject(authExchange.getBody());
-                    String token = jsonObject.getString("access_token");
-                    entity = buildHeader(tenantId, token);
                     String correlationId = e.getIn().getHeader(CLIENTCORRELATIONID, String.class);
                     ResponseEntity<String> exchange = callOpsTxnApi(requestType,correlationId,entity);
                     JSONArray contents = new JSONObject(exchange.getBody()).getJSONArray("content");
@@ -367,17 +352,19 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                 });
     }
 
-    private ResponseEntity<String> fetchApibyWorkflowKey(HttpEntity<String> entity, long workflowInstanceKey) {
+    private ResponseEntity<String> fetchApibyWorkflowKey(HttpEntity<MultiValueMap<String, String>> entity, long workflowInstanceKey) {
         return restTemplate.exchange(operationsUrl + "/transfer/" +
               workflowInstanceKey, HttpMethod.GET, entity, String.class);
     }
 
-    private ResponseEntity<String> callOpsTxnApi(String requestType, String correlationId, HttpEntity<String> entity) {
+    private ResponseEntity<String> callOpsTxnApi(String requestType, String correlationId, HttpEntity<MultiValueMap<String, String>> entity) {
         return restTemplate.exchange(operationsUrl + requestType +"clientCorrelationId=" +
                 correlationId, HttpMethod.GET, entity, String.class);
     }
 
-    private ResponseEntity<String> callAuthApi(UriComponentsBuilder builder, HttpEntity<String> entity) {
+    private ResponseEntity<String> callAuthApi(UriComponentsBuilder builder, HttpEntity<MultiValueMap<String, String>> entity) {
+        logger.info("builder.toUriString()");
+        logger.info(builder.toUriString());
        return restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
                 entity, String.class);
     }
@@ -766,16 +753,12 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
 
     private UriComponentsBuilder buildParams(Client client) {
         HttpsURLConnection.setDefaultHostnameVerifier((restAuthHost, session) -> true);
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(restAuthHost + "/oauth/token")
-                // Add query parameter
-                .queryParam("username", client.getClientId())
-                .queryParam("password", client.getClientSecret())
-                .queryParam("grant_type", "password");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(operationsAuthEndpoint);
         logger.debug("Builder : {}", builder.toUriString());
         return builder;
     }
 
-    private HttpEntity<String> buildHeader(String tenantId, String token) {
+    public HttpEntity<MultiValueMap<String, String>> buildHeaderAndBody(String tenantId, String token, Client client) {
         HttpHeaders httpHeaders = new HttpHeaders();
         if (token == null) {
             httpHeaders.add("Platform-TenantId", tenantId);
@@ -786,8 +769,12 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
             httpHeaders.remove("Authorization");
             httpHeaders.add("Authorization", "Bearer " + token);
         }
-        HttpEntity<String> entity = new HttpEntity<String>(null, httpHeaders);
-        return entity;
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("username", client.getClientId());
+        body.add("password", client.getClientSecret());
+        body.add("grant_type", "password");
+        body.add("client_id", "paymenthub");
+        return new HttpEntity<>(body, httpHeaders);
     }
 
     private String getCollectionPaymentScheme(String paymentSchemeHeaderValue, String phoneNumber) {
@@ -813,5 +800,24 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                 sanitizedNumber, DEFAULT_COLLECTION_PAYMENT_SCHEME);
         }
         return DEFAULT_COLLECTION_PAYMENT_SCHEME;
+    }
+
+    /**
+     * Build HttpEntity with authorization header using cached token or fetch a new one if not present in cache
+     * @param tenantId tenant id
+     * @param client client details
+     * @return HttpEntity with authorization header
+     */
+    public HttpEntity<MultiValueMap<String, String>> buildHttpEntity(String tenantId, Client client) {
+        String token = tokenCache.get(tenantId);
+        if (token == null) {
+            HttpEntity<MultiValueMap<String, String>> entity = buildHeaderAndBody(tenantId, null, client);
+            UriComponentsBuilder builder = buildParams(client);
+            ResponseEntity<String> authExchange = callAuthApi(builder, entity);
+            JSONObject jsonObject = new JSONObject(authExchange.getBody());
+            token = jsonObject.getString("access_token");
+            tokenCache.put(tenantId, token);
+        }
+        return buildHeaderAndBody(tenantId, token, client);
     }
 }
