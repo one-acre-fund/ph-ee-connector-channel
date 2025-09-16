@@ -370,8 +370,6 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
     }
 
     private ResponseEntity<String> callAuthApi(UriComponentsBuilder builder, HttpEntity<MultiValueMap<String, String>> entity) {
-        logger.info("builder.toUriString()");
-        logger.info(builder.toUriString());
        return restTemplate.exchange(builder.toUriString(), HttpMethod.POST,
                 entity, String.class);
     }
