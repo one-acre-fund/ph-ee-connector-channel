@@ -19,6 +19,7 @@ import org.mifos.connector.channel.GSMA_API.GsmaP2PResponseDto;
 import org.mifos.connector.channel.camel.config.Client;
 import org.mifos.connector.channel.camel.config.ClientProperties;
 import org.mifos.connector.channel.model.ValidationResponseDTO;
+import org.mifos.connector.channel.operations.TokenCache;
 import org.mifos.connector.channel.utils.AMSProps;
 import org.mifos.connector.channel.utils.AMSUtils;
 import org.mifos.connector.channel.zeebe.ZeebeProcessStarter;
@@ -59,7 +60,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Spliterator;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.StreamSupport.stream;
@@ -113,8 +113,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
     @Value("#{${payment-schemes}}")
     private Map<String, String> paymentSchemes;
     private static final String DEFAULT_COLLECTION_PAYMENT_SCHEME = "mpesa";
-
-    public final Map<String, TokenWithExpiry> tokenCache = new ConcurrentHashMap<>();
+    private final TokenCache tokenCache;
 
     public ChannelRouteBuilder(@Value("#{'${dfspids}'.split(',')}") List<String> dfspIds,
                                @Value("${bpmn.flows.payment-transfer}") String paymentTransferFlow,
@@ -137,7 +136,8 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                                @Autowired(required = false) AuthProperties authProperties,
                                ObjectMapper objectMapper,
                                ClientProperties clientProperties,
-                               RestTemplate restTemplate) {
+                               RestTemplate restTemplate,
+                               TokenCache tokenCache) {
         super(authProcessor, authProperties);
         super.configure();
         this.paymentTransferFlow = paymentTransferFlow;
@@ -160,6 +160,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
         this.timer = timer;
         this.restAuthHeader = restAuthHeader;
         this.operationsAuthDefaultExpirySeconds = operationsAuthDefaultExpirySeconds;
+        this.tokenCache = tokenCache;
     }
 
     @Override
@@ -815,7 +816,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
      * @return HttpEntity with authorization header
      */
     public HttpEntity<MultiValueMap<String, String>> buildHttpEntity(String tenantId, Client client) {
-        TokenWithExpiry entry = tokenCache.get(tenantId);
+        TokenWithExpiry entry = tokenCache.getTenantCache(tenantId);
         if (entry == null || entry.isExpired(operationsAuthDefaultExpirySeconds)) {
             HttpEntity<MultiValueMap<String, String>> tokenReq = buildHeaderAndBody(tenantId, null, client);
             UriComponentsBuilder builder = buildParams(client);
@@ -824,7 +825,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
             String accessToken = json.getString("access_token");
             long expiresIn = json.optLong("expires_in", operationsAuthDefaultExpirySeconds);
             entry = new TokenWithExpiry(accessToken, java.time.Instant.now().plusSeconds(expiresIn));
-            tokenCache.put(tenantId, entry);
+            tokenCache.updateTenantCache(tenantId, entry);
         }
         return buildHeaderAndBody(tenantId, entry.token, client);
     }

@@ -7,6 +7,7 @@ import org.mifos.connector.channel.camel.config.Client;
 import org.mifos.connector.channel.camel.config.ClientProperties;
 import org.mifos.connector.channel.camel.routes.ChannelRouteBuilder;
 import org.mifos.connector.channel.camel.routes.TokenWithExpiry;
+import org.mifos.connector.channel.operations.TokenCache;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -27,6 +28,7 @@ class ChannelRouteBuilderTest {
     private RestTemplate restTemplate;
     private ClientProperties clientProperties;
     private Client client;
+    private final TokenCache tokenCache = new TokenCache();
 
     @BeforeEach
     void setUp() {
@@ -58,13 +60,14 @@ class ChannelRouteBuilderTest {
                 null,
                 null,
                 clientProperties,
-                restTemplate
+                restTemplate,
+                tokenCache
         );
     }
 
     @Test
     void testBuildHttpEntity_TokenCached() {
-        routeBuilder.tokenCache.put("tenant1", new TokenWithExpiry("cachedToken", Instant.now().plusSeconds(600)));
+        tokenCache.updateTenantCache("tenant1", new TokenWithExpiry("cachedToken", Instant.now().plusSeconds(600)));
         HttpEntity<?> entity = routeBuilder.buildHttpEntity("tenant1", client);
         assertTrue(entity.getHeaders().get("Authorization").get(0).contains("Bearer cachedToken"));
     }
@@ -83,7 +86,7 @@ class ChannelRouteBuilderTest {
 
         HttpEntity<?> entity = routeBuilder.buildHttpEntity("tenant1", client);
         assertTrue(entity.getHeaders().get("Authorization").get(0).contains("Bearer newToken"));
-        assertEquals("newToken", routeBuilder.tokenCache.get("tenant1").token);
+        assertEquals("newToken", tokenCache.getTenantCache("tenant1").token);
     }
 
     @Test
