@@ -97,7 +97,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
     private String mpesaFlow;
     private String operationsAuthEndpoint;
     private String operationsUrl;
-    private Boolean operationsAuthEnabled;
+    private Long operationsAuthDefaultExpirySeconds;
     private String transfersEndpoint;
     private String transactionEndpoint;
     private Boolean isNotificationSuccessServiceEnabled;
@@ -114,7 +114,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
     private Map<String, String> paymentSchemes;
     private static final String DEFAULT_COLLECTION_PAYMENT_SCHEME = "mpesa";
 
-    public final Map<String, String> tokenCache = new ConcurrentHashMap<>();
+    public final Map<String, TokenWithExpiry> tokenCache = new ConcurrentHashMap<>();
 
     public ChannelRouteBuilder(@Value("#{'${dfspids}'.split(',')}") List<String> dfspIds,
                                @Value("${bpmn.flows.payment-transfer}") String paymentTransferFlow,
@@ -124,7 +124,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                                @Value("${bpmn.flows.mpesa-flow}") String mpesaFlow,
                                @Value("${operations.endpoint.auth}") String operationsAuthEndpoint,
                                @Value("${operations.url}") String operationsUrl,
-                               @Value("${operations.auth-enabled}") Boolean operationsAuthEnabled,
+                               @Value("${operations.auth-expiry-default}") Long operationsAuthDefaultExpirySeconds,
                                @Value("${operations.endpoint.transfers}") String transfersEndpoint,
                                @Value("${operations.endpoint.transactionReq}") String transactionEndpoint,
                                @Value("${mpesa.notification.success.enabled}") Boolean isNotificationSuccessServiceEnabled,
@@ -159,7 +159,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
         this.isNotificationFailureServiceEnabled = isNotificationFailureServiceEnabled;
         this.timer = timer;
         this.restAuthHeader = restAuthHeader;
-        this.operationsAuthEnabled = operationsAuthEnabled;
+        this.operationsAuthDefaultExpirySeconds = operationsAuthDefaultExpirySeconds;
     }
 
     @Override
@@ -377,10 +377,11 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
     }
 
     private String getRequestType(String requestType) {
-        requestType = requestType.isEmpty() ? "transfers" : requestType;
-        requestType = requestType.equalsIgnoreCase("transfers") ? transfersEndpoint :
-                transactionEndpoint;
-        return requestType;
+        if (org.apache.commons.lang3.StringUtils.isBlank(requestType) ||
+                "transfers".equalsIgnoreCase(requestType)) {
+            return transfersEndpoint;
+        }
+        return transactionEndpoint;
     }
 
     private void collectionRoutes(){
@@ -816,15 +817,17 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
      * @return HttpEntity with authorization header
      */
     public HttpEntity<MultiValueMap<String, String>> buildHttpEntity(String tenantId, Client client) {
-        String token = tokenCache.get(tenantId);
-        if (token == null) {
-            HttpEntity<MultiValueMap<String, String>> entity = buildHeaderAndBody(tenantId, null, client);
+        TokenWithExpiry entry = tokenCache.get(tenantId);
+        if (entry == null || entry.isExpired(operationsAuthDefaultExpirySeconds)) {
+            HttpEntity<MultiValueMap<String, String>> tokenReq = buildHeaderAndBody(tenantId, null, client);
             UriComponentsBuilder builder = buildParams(client);
-            ResponseEntity<String> authExchange = callAuthApi(builder, entity);
-            JSONObject jsonObject = new JSONObject(authExchange.getBody());
-            token = jsonObject.getString("access_token");
-            tokenCache.put(tenantId, token);
+            ResponseEntity<String> authExchange = callAuthApi(builder, tokenReq);
+            JSONObject json = new JSONObject(authExchange.getBody());
+            String accessToken = json.getString("access_token");
+            long expiresIn = json.optLong("expires_in", operationsAuthDefaultExpirySeconds);
+            entry = new TokenWithExpiry(accessToken, java.time.Instant.now().plusSeconds(expiresIn));
+            tokenCache.put(tenantId, entry);
         }
-        return buildHeaderAndBody(tenantId, token, client);
+        return buildHeaderAndBody(tenantId, entry.token, client);
     }
 }

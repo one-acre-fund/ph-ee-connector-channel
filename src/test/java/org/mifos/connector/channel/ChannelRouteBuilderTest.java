@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.mifos.connector.channel.camel.config.Client;
 import org.mifos.connector.channel.camel.config.ClientProperties;
 import org.mifos.connector.channel.camel.routes.ChannelRouteBuilder;
+import org.mifos.connector.channel.camel.routes.TokenWithExpiry;
 import org.springframework.http.*;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -39,7 +40,7 @@ class ChannelRouteBuilderTest {
                 "mpesaFlow",
                 "http://authhost",
                 "http://opsurl",
-                true,
+                60L,
                 "/transfers",
                 "/transactionReq",
                 true,
@@ -58,7 +59,7 @@ class ChannelRouteBuilderTest {
 
     @Test
     void testBuildHttpEntity_TokenCached() {
-        routeBuilder.tokenCache.put("tenant1", "cachedToken");
+        routeBuilder.tokenCache.put("tenant1", new TokenWithExpiry("cachedToken", System.currentTimeMillis() + 60000));
         HttpEntity<?> entity = routeBuilder.buildHttpEntity("tenant1", client);
         assertTrue(entity.getHeaders().get("Authorization").get(0).contains("Bearer cachedToken"));
     }
