@@ -61,7 +61,8 @@ class ChannelRouteBuilderTest {
                 null,
                 clientProperties,
                 restTemplate,
-                tokenCache
+                tokenCache,
+                30L
         );
     }
 

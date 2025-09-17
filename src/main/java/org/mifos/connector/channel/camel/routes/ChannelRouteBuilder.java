@@ -114,6 +114,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
     private Map<String, String> paymentSchemes;
     private static final String DEFAULT_COLLECTION_PAYMENT_SCHEME = "mpesa";
     private final TokenCache tokenCache;
+    private final Long operationsAuthExpiryBufferSeconds;
 
     public ChannelRouteBuilder(@Value("#{'${dfspids}'.split(',')}") List<String> dfspIds,
                                @Value("${bpmn.flows.payment-transfer}") String paymentTransferFlow,
@@ -137,7 +138,8 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                                ObjectMapper objectMapper,
                                ClientProperties clientProperties,
                                RestTemplate restTemplate,
-                               TokenCache tokenCache) {
+                               TokenCache tokenCache,
+                               @Value("${operations.auth-expiry-buffer-default}") Long operationsAuthExpiryBufferSeconds) {
         super(authProcessor, authProperties);
         super.configure();
         this.paymentTransferFlow = paymentTransferFlow;
@@ -161,6 +163,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
         this.restAuthHeader = restAuthHeader;
         this.operationsAuthDefaultExpirySeconds = operationsAuthDefaultExpirySeconds;
         this.tokenCache = tokenCache;
+        this.operationsAuthExpiryBufferSeconds = operationsAuthExpiryBufferSeconds;
     }
 
     @Override
@@ -817,7 +820,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
      */
     public HttpEntity<MultiValueMap<String, String>> buildHttpEntity(String tenantId, Client client) {
         TokenWithExpiry entry = tokenCache.getTenantCache(tenantId);
-        if (entry == null || entry.isExpired(operationsAuthDefaultExpirySeconds)) {
+        if (entry == null || entry.isExpired(operationsAuthExpiryBufferSeconds)) {
             HttpEntity<MultiValueMap<String, String>> tokenReq = buildHeaderAndBody(tenantId, null, client);
             UriComponentsBuilder builder = buildParams(client);
             ResponseEntity<String> authExchange = callAuthApi(builder, tokenReq);
