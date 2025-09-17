@@ -1,7 +1,9 @@
 Release Notes
 
+
 ## OAF Version 1.3.1-mifos-1.5.4
         * [CP-3816] Refactor Squad Reconciliation so that it's done for all the districts (not just one)
+        * [CP-3817] Add support for operations app authentication token in transaction requests
 
 ## OAF Version 1.3.0-mifos-1.5.4
         * [CP-3489] Add support for reconciling missed Squad transactions
