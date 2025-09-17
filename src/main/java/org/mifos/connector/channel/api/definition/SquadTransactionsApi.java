@@ -1,10 +1,14 @@
 package org.mifos.connector.channel.api.definition;
 
 import org.mifos.connector.channel.model.SquadTransactionResponse;
+import org.mifos.connector.channel.model.SquadTransactionResponseList;
+import org.mifos.connector.channel.model.SquadTransactionsSyncRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+
+import java.util.List;
 
 import static org.mifos.connector.channel.camel.config.CamelProperties.SQUAD_SIGNATURE_HEADER;
 
@@ -31,5 +35,5 @@ public interface SquadTransactionsApi {
      * @return {@link ResponseEntity} containing {@link SquadTransactionResponse} with the result of the synchronization.
      */
     @PostMapping("/squad/transactions/sync")
-    ResponseEntity<SquadTransactionResponse> syncTransactions(@RequestBody String body);
+    ResponseEntity<SquadTransactionResponseList> syncTransactions(@RequestBody SquadTransactionsSyncRequest body);
 }

@@ -32,6 +32,7 @@ import static org.mifos.connector.channel.zeebe.ZeebeVariables.AMOUNT;
 import static org.mifos.connector.channel.zeebe.ZeebeVariables.AMS;
 import static org.mifos.connector.channel.zeebe.ZeebeVariables.CORRELATION_ID;
 import static org.mifos.connector.channel.zeebe.ZeebeVariables.CURRENCY;
+import static org.mifos.connector.channel.zeebe.ZeebeVariables.DISTRICT_TOKEN;
 import static org.mifos.connector.channel.zeebe.ZeebeVariables.EXTERNAL_ID;
 import static org.mifos.connector.channel.zeebe.ZeebeVariables.IS_MISSED_WEBHOOK_NOTIFICATION;
 import static org.mifos.connector.channel.zeebe.ZeebeVariables.IS_NOTIFICATIONS_FAILURE_ENABLED;
@@ -135,10 +136,11 @@ public class SquadRouteBuilder extends RouteBuilder {
             .setProperty(PAGE, constant(1))
             .setProperty(HAS_MORE, constant(true))
             .loopDoWhile(simple("${exchangeProperty[hasMore]} == true"))
+                .setProperty("districtToken", header(DISTRICT_TOKEN))
                 .removeHeader("*")
                 .setHeader(Exchange.HTTP_METHOD, constant("GET"))
                 .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
-                .setHeader(AUTHORIZATION, simple("Bearer " + squadProps.getToken()))
+                .setHeader(AUTHORIZATION, simple("Bearer ${exchangeProperty[districtToken]}"))
                 .toD(squadProps.getBaseUrl() + squadProps.getLogsEndpoint()
                     + "?page=${exchangeProperty[page]}&perPage=" + squadProps.getLogsPageSize()
                 + "&bridgeEndpoint=true&throwExceptionOnFailure=false")
