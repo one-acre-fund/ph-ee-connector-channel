@@ -59,7 +59,7 @@ dependencies {
 }
 
 group = 'org.mifos'
-sourceCompatibility = "11"
+sourceCompatibility = "17"
 
 test {
     useJUnitPlatform()
@@ -76,4 +76,4 @@ publishing {
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
-targetCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_17
