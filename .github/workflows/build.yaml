@@ -48,7 +48,7 @@ jobs:
     - name: Get Revision and Set Image Tag
       id: set-image-tag
       run: |
-        VERSION_TAG=$(/gradlew properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}')
+        VERSION_TAG=$(./gradlew properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}')
         echo "VERSION_TAG=$VERSION_TAG"
         
         IMAGE_TAG="${VERSION_TAG}.$(date '+%Y.%m.%d').${{ github.run_number }}"
