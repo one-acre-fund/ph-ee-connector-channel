@@ -1,6 +1,9 @@
 Release Notes
 
 
+## OAF Version 1.3.2-mifos-1.5.4
+        * [CP-3725] - Add support for mutiple tenants in Payment Hub Ops
+
 ## OAF Version 1.3.1-mifos-1.5.4
         * [CP-3816] Refactor Squad Reconciliation so that it's done for all the districts (not just one)
         * [CP-3817] Add support for operations app authentication token in transaction requests
