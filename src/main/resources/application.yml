@@ -6,7 +6,7 @@ camel:
     json-jackson:
       auto-discover-object-mapper: true
 
-dfspids: "DFSPID"
+dfspids: "oaf,kenya,rwanda,burundi,malawi,usa,zambia,nigeria"
 
 transaction-id-length: -1
 
@@ -51,8 +51,24 @@ ams:
       value: "roster"
     - identifier: "foundationalid"
       value: "paygops"
+    - identifier: "oaf"
+      value : "fineract"
+    - identifier: "kenya"
+      value : "fineract"
+    - identifier: "rwanda"
+      value : "fineract"
+    - identifier: "burundi"
+      value : "fineract"
+    - identifier: "malawi"
+      value : "fineract"
+    - identifier: "zambia"
+      value : "fineract"
+    - identifier: "nigeria"
+      value : "fineract"
+    - identifier: "usa"
+      value : "fineract"
     - identifier: "default"
-      value : "paygops"
+      value : "fineract"
 
 zeebe:
   client:
