@@ -399,7 +399,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     Map<String, Object> extraVariables = new HashMap<>();
                     extraVariables.put("initiator", "PAYEE");
                     extraVariables.put("initiatorType", "BUSINESS");
-                    extraVariables.put("scenario", "MPESA");
+
 
 
                     String tenantId = exchange.getIn().getHeader("Platform-TenantId", String.class);
@@ -456,9 +456,10 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     logger.info("Final Value for ams : " + finalAmsVal);
                     extraVariables.put(AMS,finalAmsVal);
                     String paymentScheme = getCollectionPaymentScheme(exchange.getIn().getHeader(PAYMENT_SCHEME_HEADER, String.class), primaryIdentifierVal);
-                    extraVariables.put(PAYMENT_SCHEME, paymentScheme);
+                    extraVariables.put(PAYMENT_SCHEME, paymentScheme.concat("-").concat(tenantId));
                     tenantSpecificBpmn = mpesaFlow.replace("{dfspid}", tenantId)
                                  .replace("{ams}",finalAmsVal).replace("{ps}", paymentScheme);;
+                    extraVariables.put("scenario", paymentScheme);
 
                     String amount = body.getJSONObject("amount").getString("amount");
 
@@ -473,7 +474,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     extraVariables.put("clientCorrelationId", clientCorrelationId);
                     amsUtils.addCallbackUrlToVariables(customDataString, extraVariables);
 
-                    String transactionId = zeebeProcessStarter.startMpesaZeebeWorkflow(tenantSpecificBpmn,
+                    String transactionId = zeebeProcessStarter.startZeebePaymentWorkflow(tenantSpecificBpmn,
                             channelRequestBodyString,
                             extraVariables);
                     JSONObject response = new JSONObject();

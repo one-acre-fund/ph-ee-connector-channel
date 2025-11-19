@@ -53,7 +53,7 @@ public class ZeebeProcessStarter {
         return transactionId;
     }
 
-    public String startMpesaZeebeWorkflow(String workflowId, String request, Map<String, Object> extraVariables) {
+    public String startZeebePaymentWorkflow(String workflowId, String request, Map<String, Object> extraVariables) {
         String transactionId = customSizeTransactionId();
 
         Map<String, Object> variables = new HashMap<>();
