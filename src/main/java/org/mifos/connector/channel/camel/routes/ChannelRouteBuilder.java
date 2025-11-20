@@ -456,7 +456,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     logger.info("Final Value for ams : " + finalAmsVal);
                     extraVariables.put(AMS,finalAmsVal);
                     String paymentScheme = getCollectionPaymentScheme(exchange.getIn().getHeader(PAYMENT_SCHEME_HEADER, String.class), primaryIdentifierVal);
-                    extraVariables.put(PAYMENT_SCHEME, paymentScheme.concat("-").concat(tenantId));
+                    extraVariables.put(PAYMENT_SCHEME, paymentScheme);
                     tenantSpecificBpmn = mpesaFlow.replace("{dfspid}", tenantId)
                                  .replace("{ams}",finalAmsVal).replace("{ps}", paymentScheme);;
                     extraVariables.put("scenario", paymentScheme);
