@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.3.1.2-mifos-1.5.4
+        * [CP-3966] Remove signature validation for Squad POS transactions
+
 ## OAF Version 1.3.1.1-mifos-1.5.4
         * [CP-3816] Refactor Squad Reconciliation so that it's done for all the districts (not just one)
 
