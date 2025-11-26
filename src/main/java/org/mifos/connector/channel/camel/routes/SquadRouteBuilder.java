@@ -98,7 +98,6 @@ public class SquadRouteBuilder extends RouteBuilder {
             .unmarshal().json(SquadTransactionRequest.class)
             .to("bean-validator:squad-txn-validator")
             .setProperty(TRANSACTION_ID, simple("${body.transactionReference}"))
-            .to("direct:squad-signature-validation")
             .to("direct:start-squad-txn-workflow")
             .setBody(exchange -> {
                 String transactionRef = exchange.getProperty(TRANSACTION_ID, String.class);
