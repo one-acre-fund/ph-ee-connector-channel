@@ -1,6 +1,6 @@
 Release Notes
 
-## OAF Version 1.3.1-mifos-1.5.4
+## OAF Version 1.3.1.1-mifos-1.5.4
         * [CP-3816] Refactor Squad Reconciliation so that it's done for all the districts (not just one)
 
 ## OAF Version 1.3.0-mifos-1.5.4
