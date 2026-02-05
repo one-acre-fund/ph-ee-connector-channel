@@ -52,6 +52,11 @@ public class ZeebeHealthIndicator implements HealthIndicator {
             newHealth = Health.down()
                     .withDetail("error", "Zeebe health check timed out after " + healthCheckTimeoutSeconds + "s")
                     .build();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            newHealth = Health.down()
+                    .withDetail("error", "Zeebe health check interrupted")
+                    .build();
         } catch (Exception e) {
             newHealth = Health.down()
                     .withDetail("error", e.getClass().getSimpleName() + ": " + e.getMessage())
