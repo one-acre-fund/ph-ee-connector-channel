@@ -1,5 +1,7 @@
 Release Notes
 
+## OAF Version 1.3.3-mifos-1.5.4
+        * [CP-3614] - Add Zeebe Connectivity Check to the Channel connector Health Endpoint
 
 ## OAF Version 1.3.2-mifos-1.5.4
         * [CP-3725] - Add support for mutiple tenants in Payment Hub Ops
