@@ -32,35 +32,35 @@ public class ZeebeHealthIndicator implements HealthIndicator {
 
         // Return cached result if still fresh
         Health cached = cachedHealth.get();
-
-        // Return cached result if still fresh
         if (cached != null && (now - lastCheck) < cacheDurationMs) {
             return cached;
         }
 
         // Perform actual check with timeout
+        Health newHealth;
         try {
-
             Topology topology = zeebeClient.newTopologyRequest()
                     .send().get(healthCheckTimeoutSeconds, TimeUnit.SECONDS);
 
-            cached = Health.up()
+            newHealth = Health.up()
                     .withDetail("brokers", topology.getBrokers().size())
                     .withDetail("clusterSize", topology.getClusterSize())
                     .withDetail("partitions", topology.getPartitionsCount())
                     .build();
 
         } catch (TimeoutException e) {
-            cached = Health.down()
+            newHealth = Health.down()
                     .withDetail("error", "Zeebe health check timed out after " + healthCheckTimeoutSeconds + "s")
                     .build();
         } catch (Exception e) {
-            cached = Health.down()
+            newHealth = Health.down()
                     .withDetail("error", e.getClass().getSimpleName() + ": " + e.getMessage())
                     .build();
         }
 
-        lastCheck = now;
-        return cached;
+        cachedHealth.set(newHealth);
+        lastCheckTime.set(now);
+
+        return newHealth;
     }
 }
