@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.3.4-mifos-1.5.4
+        * [CP-3980] - Integrate Elastic APM with PH
+
 ## OAF Version 1.3.3-mifos-1.5.4
         * [CP-3614] - Add Zeebe Connectivity Check to the Channel connector Health Endpoint
 
