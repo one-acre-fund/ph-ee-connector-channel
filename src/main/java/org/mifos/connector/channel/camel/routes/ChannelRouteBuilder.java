@@ -458,7 +458,7 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     String paymentScheme = getCollectionPaymentScheme(exchange.getIn().getHeader(PAYMENT_SCHEME_HEADER, String.class), primaryIdentifierVal);
                     extraVariables.put(PAYMENT_SCHEME, paymentScheme);
                     tenantSpecificBpmn = mpesaFlow.replace("{dfspid}", tenantId)
-                                 .replace("{ams}",finalAmsVal).replace("{ps}", paymentScheme);;
+                                 .replace("{ams}",finalAmsVal).replace("{ps}", paymentScheme);
                     extraVariables.put("scenario", paymentScheme);
 
                     String amount = body.getJSONObject("amount").getString("amount");
@@ -473,14 +473,23 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                     extraVariables.put("timer",timer);
                     extraVariables.put("clientCorrelationId", clientCorrelationId);
                     amsUtils.addCallbackUrlToVariables(customDataString, extraVariables);
-
-                    String transactionId = zeebeProcessStarter.startZeebePaymentWorkflow(tenantSpecificBpmn,
-                            channelRequestBodyString,
-                            extraVariables);
-                    JSONObject response = new JSONObject();
-                    response.put("transactionId", transactionId);
-                    exchange.getIn().setBody(response.toString());
-                    exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+                    try {
+                        String transactionId = zeebeProcessStarter.startZeebePaymentWorkflow(tenantSpecificBpmn,
+                                channelRequestBodyString,
+                                extraVariables);
+                        JSONObject response = new JSONObject();
+                        response.put("transactionId", transactionId);
+                        exchange.getIn().setBody(response.toString());
+                        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+                    } catch (io.camunda.zeebe.client.api.command.ClientStatusException ex) {
+                        logger.error("Zeebe workflow start failed: {}", ex.getMessage());
+                        JSONObject errorResponse = new JSONObject();
+                        errorResponse.put("error", String.format("Zeebe workflow not found for ams %s, payment scheme and %s tenant %s", finalAmsVal, paymentScheme, tenantId));
+                        errorResponse.put("details", ex.getMessage());
+                        exchange.getIn().setBody(errorResponse.toString());
+                        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
+                        exchange.getIn().setHeader("Content-Type", "application/json");
+                    }
                 });
     }
 
