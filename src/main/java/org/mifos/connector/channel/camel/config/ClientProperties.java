@@ -24,9 +24,13 @@ public class ClientProperties {
     }
 
     public Client getClient(String tenant) {
+        // This is the login client on PH Ops App. If we fail to get the country-specific login, we use the default OAF ones
         return getClients().stream()
                 .filter(t -> t.getTenant().equals(tenant))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Client for tenant: " + tenant + ", not configuerd!"));
+                .orElse(getClients().stream()
+                        .filter(t -> t.getTenant().equals("oaf"))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Client for tenant: " + tenant + ", not configured!")));
     }
 }
