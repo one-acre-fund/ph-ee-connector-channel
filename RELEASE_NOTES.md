@@ -1,5 +1,10 @@
 Release Notes
 
+## OAF Version 1.3.4-mifos-1.5.4
+        * [CP-3980] - Integrate Elastic APM with PH
+
+## OAF Version 1.3.3-mifos-1.5.4
+        * [CP-3614] - Add Zeebe Connectivity Check to the Channel connector Health Endpoint
 
 ## OAF Version 1.3.2-mifos-1.5.4
         * [CP-3725] - Add support for mutiple tenants in Payment Hub Ops
@@ -32,4 +37,3 @@ Release Notes
 ## OAF Version 1.1.2-mifos-1.5.3
         * [SER-2040] - Fix login issue in get transfer status route when authentication with operation apps is enabled
         * [SER-2040] - Add support of client name and custom data fields in the valiadtion response
-        * [SER-2304] - Add more transaction logs

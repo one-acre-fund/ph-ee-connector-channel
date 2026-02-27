@@ -25,6 +25,7 @@ server:
 operations:
   url: ${OPERATIONS_URL:http://bb-operations.mifos.io/api/v1}
   auth-expiry-default: ${AUTHENTICATION_EXPIRY_DEFAULT:60} # in seconds
+  auth-expiry-buffer-default: ${AUTHENTICATION_EXPIRY_BUFFER_DEFAULT:30} # in seconds
   endpoint:
     auth: ${AUTHENTICATION_API:https://accounts.qa.oneacrefund.org/realms/OneAcreFund/protocol/openid-connect/token}
     transfers: "/transfers?page=0&size=1&"
@@ -100,10 +101,12 @@ management:
     health:
       probes:
         enabled: true
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
+      group:
+        readiness:
+          include: readinessState,zeebe
+        liveness:
+          include: livenessState
+      show-details: ALWAYS
 logging:
   level:
     root: INFO
@@ -155,3 +158,8 @@ monnify:
 
 executor:
   thread-pool-size: 5
+
+zeebe-custom:
+  health:
+    cache-duration-ms: 15000
+    check-timeout-seconds: 5
