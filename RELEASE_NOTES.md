@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.3.5-mifos-1.5.4
+        * [CP-3931] - Default to OAF when country-specific login credentials for Ops App are missing
+
 ## OAF Version 1.3.4-mifos-1.5.4
         * [CP-3980] - Integrate Elastic APM with PH
 
