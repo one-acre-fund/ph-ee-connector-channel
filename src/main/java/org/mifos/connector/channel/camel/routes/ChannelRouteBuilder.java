@@ -61,6 +61,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Spliterator;
 
+import static io.grpc.Status.Code.NOT_FOUND;
 import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.StreamSupport.stream;
 import static org.mifos.connector.channel.camel.config.CamelProperties.*;
@@ -483,12 +484,25 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                         exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
                     } catch (io.camunda.zeebe.client.api.command.ClientStatusException ex) {
                         logger.error("Zeebe workflow start failed: {}", ex.getMessage());
-                        JSONObject errorResponse = new JSONObject();
-                        errorResponse.put("error", String.format("Zeebe workflow not found for ams %s, payment scheme and %s tenant %s", finalAmsVal, paymentScheme, tenantId));
-                        errorResponse.put("details", ex.getMessage());
-                        exchange.getIn().setBody(errorResponse.toString());
-                        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
-                        exchange.getIn().setHeader("Content-Type", "application/json");
+                        if (NOT_FOUND.equals(ex.getStatusCode())) {
+                            JSONObject errorResponse = new JSONObject();
+                            errorResponse.put("error", String.format("Zeebe workflow not found for ams %s, payment " +
+                                    "scheme and %s tenant %s", finalAmsVal, paymentScheme, tenantId));
+                            errorResponse.put("details", ex.getMessage());
+                            exchange.getIn().setBody(errorResponse.toString());
+                            exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
+                            logger.error("Workflow not found for ams {}, payment scheme {} and tenant {}",
+                                    finalAmsVal, paymentScheme, tenantId);
+                        } else {
+                            JSONObject errorResponse = new JSONObject();
+                            errorResponse.put("error", "Failed to start Zeebe workflow for the moment");
+                            errorResponse.put("details", ex.getMessage());
+                            exchange.getIn().setBody(errorResponse.toString());
+                            exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 503);
+                            logger.error("Failed to start Zeebe workflow for ams {}, payment scheme {} and tenant {}:" +
+                                    " {}", finalAmsVal, paymentScheme, tenantId, ex.getMessage());
+                        }
+
                     }
                 });
     }
