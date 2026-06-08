@@ -7,7 +7,13 @@ plugins {
     id 'maven-publish'
     id 'eclipse'
     id 'org.springframework.boot' version '2.6.2'
+    id 'jacoco'
+    id 'org.sonarqube' version '4.4.1.3373'
 
+}
+
+jacoco {
+    toolVersion = "0.8.10"
 }
 
 repositories {
@@ -61,8 +67,29 @@ dependencies {
 group = 'org.mifos'
 sourceCompatibility = "11"
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 11
+}
+
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn test
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml"))
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/test"))
+    }
 }
 
 publishing {
@@ -76,4 +103,17 @@ publishing {
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
-targetCompatibility = JavaVersion.VERSION_11
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "one-acre-fund_ph-ee-connector-channel"
+        property "sonar.organization", "one-acre-fund"
+        property "sonar.token", System.getenv("SONAR_TOKEN")
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.projectBaseDir", "${project.projectDir}"
+        property "sonar.java.binaries", layout.buildDirectory.dir("classes/java/main").get().asFile.absolutePath
+        property "sonar.coverage.jacoco.xmlReportPaths", layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml").get().asFile.absolutePath
+        property "sonar.newCode.period", "previous_version"
+        property "sonar.newCode.referenceBranch", "main"
+    }
+}

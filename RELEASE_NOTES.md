@@ -1,10 +1,26 @@
 Release Notes
 
+
+
+## OAF Version 1.3.5-mifos-1.5.4
+        * [CP-3931] - Default to OAF when country-specific login credentials for Ops App are missing
+
+## OAF Version 1.3.4-mifos-1.5.4
+        * [CP-3980] - Integrate Elastic APM with PH
+
+## OAF Version 1.3.3-mifos-1.5.4
+        * [CP-3614] - Add Zeebe Connectivity Check to the Channel connector Health Endpoint
+
+## OAF Version 1.3.2-mifos-1.5.4
+        * [CP-3725] - Add support for mutiple tenants in Payment Hub Ops
+
 ## OAF Version 1.3.1.2-mifos-1.5.4
         * [CP-3966] Remove signature validation for Squad POS transactions
 
 ## OAF Version 1.3.1.1-mifos-1.5.4
         * [CP-3816] Refactor Squad Reconciliation so that it's done for all the districts (not just one)
+        * [CP-3817] Add support for operations app authentication token in transaction requests
+        * [CP-3757] - Switch CI to GitHub Actions
 
 ## OAF Version 1.3.0-mifos-1.5.4
         * [CP-3489] Add support for reconciling missed Squad transactions
@@ -29,4 +45,3 @@ Release Notes
 ## OAF Version 1.1.2-mifos-1.5.3
         * [SER-2040] - Fix login issue in get transfer status route when authentication with operation apps is enabled
         * [SER-2040] - Add support of client name and custom data fields in the valiadtion response
-        * [SER-2304] - Add more transaction logs

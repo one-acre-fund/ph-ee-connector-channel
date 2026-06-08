@@ -6,7 +6,7 @@ camel:
     json-jackson:
       auto-discover-object-mapper: true
 
-dfspids: "DFSPID"
+dfspids: "oaf,kenya,rwanda,burundi,malawi,usa,zambia,nigeria"
 
 transaction-id-length: -1
 
@@ -23,9 +23,11 @@ server:
   port: 8080
 
 operations:
-  url: "http://bb-operations.mifos.io/api/v1"
-  auth-enabled: false
+  url: ${OPERATIONS_URL:http://bb-operations.mifos.io/api/v1}
+  auth-expiry-default: ${AUTHENTICATION_EXPIRY_DEFAULT:60} # in seconds
+  auth-expiry-buffer-default: ${AUTHENTICATION_EXPIRY_BUFFER_DEFAULT:30} # in seconds
   endpoint:
+    auth: ${AUTHENTICATION_API:https://accounts.qa.oneacrefund.org/realms/OneAcreFund/protocol/openid-connect/token}
     transfers: "/transfers?page=0&size=1&"
     transactionReq: "/transactionRequests/?"
 
@@ -50,8 +52,24 @@ ams:
       value: "roster"
     - identifier: "foundationalid"
       value: "paygops"
+    - identifier: "oaf"
+      value : "fineract"
+    - identifier: "kenya"
+      value : "fineract"
+    - identifier: "rwanda"
+      value : "fineract"
+    - identifier: "burundi"
+      value : "fineract"
+    - identifier: "malawi"
+      value : "fineract"
+    - identifier: "zambia"
+      value : "fineract"
+    - identifier: "nigeria"
+      value : "fineract"
+    - identifier: "usa"
+      value : "fineract"
     - identifier: "default"
-      value : "paygops"
+      value : "fineract"
 
 zeebe:
   client:
@@ -83,10 +101,12 @@ management:
     health:
       probes:
         enabled: true
-      liveness:
-        enabled: true
-      readiness:
-        enabled: true
+      group:
+        readiness:
+          include: readinessState,zeebe
+        liveness:
+          include: livenessState
+      show-details: ALWAYS
 logging:
   level:
     root: INFO
@@ -138,3 +158,8 @@ monnify:
 
 executor:
   thread-pool-size: 5
+
+zeebe-custom:
+  health:
+    cache-duration-ms: 15000
+    check-timeout-seconds: 5
