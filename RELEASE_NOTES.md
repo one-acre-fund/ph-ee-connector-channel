@@ -1,5 +1,7 @@
 Release Notes
 
+
+
 ## OAF Version 1.3.5-mifos-1.5.4
         * [CP-3931] - Default to OAF when country-specific login credentials for Ops App are missing
 
@@ -12,7 +14,10 @@ Release Notes
 ## OAF Version 1.3.2-mifos-1.5.4
         * [CP-3725] - Add support for mutiple tenants in Payment Hub Ops
 
-## OAF Version 1.3.1-mifos-1.5.4
+## OAF Version 1.3.1.2-mifos-1.5.4
+        * [CP-3966] Remove signature validation for Squad POS transactions
+
+## OAF Version 1.3.1.1-mifos-1.5.4
         * [CP-3816] Refactor Squad Reconciliation so that it's done for all the districts (not just one)
         * [CP-3817] Add support for operations app authentication token in transaction requests
         * [CP-3757] - Switch CI to GitHub Actions
