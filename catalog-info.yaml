@@ -31,7 +31,7 @@ metadata:
     - url: https://elastic.oneacrefund.org/app/r/s/CgjiD
       title: Kong Ingress logs
       icon: globe
-    - url: https://github.com/one-acre-fund/ph-ee-connector-channel/blob/develop/.github/workflows/build.yaml
+    - url: https://github.com/one-acre-fund/ph-ee-connector-channel/actions/workflows/build.yaml
       title: Build Pipeline
       icon: build
 spec:
