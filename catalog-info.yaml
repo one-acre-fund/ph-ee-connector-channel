@@ -2,54 +2,44 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: ph-ee-connector-channel
-  title: PH Channel Connector
-  description: A central microservice that manages and routes communication between PaymentHub and various external channels, including mobile money platforms and banking APIs.
+  title: Channel Connector
+  description: A ph connector that initiate transactions through Zeebe.
   annotations:
     github.com/project-slug: one-acre-fund/ph-ee-connector-channel
+    backstage.io/kubernetes-id: ph-ee-connector-channel
+    backstage.io/kubernetes-namespace: paymenthub
     backstage.io/techdocs-ref: dir:.
     sonarqube.org/project-key: one-acre-fund_ph-ee-connector-channel
-    dev.azure.com/project-repo: OAFDev/prd-pipelines
     backstage.io/code-coverage: sonarqube
   tags:
-    - microfinance
-    - financial-services
-    - payments
-    - paymenthub
-    - channel
-    - safaricom
-    - mobile-money
-    - api
     - java
     - spring-boot
-    - one-acre-fund
+    - apache-camel
+    - payment-hub
+    - paymenthub
+    - operations
   links:
-    - url:
-      title: API Documentation
-      icon: docs
-    - url: https://sonarcloud.io/summary/new_code?id=one-acre-fund_ph-ee-connector-channel
+    - url: https://sonarcloud.io/project/overview?id=one-acre-fund_ph-ee-connector-channel
       title: Code Quality Dashboard
-      icon: dashboard
-    - url:
-      title: Build Pipeline
-      icon: build
-    - url:
-      title: Docker Images
-      icon: docker
-    - url:
-      title: APM Monitoring
-      icon: apm
-    - url:
-      title: Ingress Logs
-      icon: logs
-    - url:
-      title: Stability Dashboard
       icon: dashboard
     - url: https://ph-web.oneacrefund.org
       title: Production Environment
       icon: globe
+    - url: https://elastic.oneacrefund.org/app/apm/services/ph-ee-connector-channel
+      title: Elastic APM Dashboard
+      icon: globe
+    - url: https://elastic.oneacrefund.org/app/r/s/CgjiD
+      title: Kong Ingress logs
+      icon: globe
+    - url: https://github.com/one-acre-fund/ph-ee-connector-channel/blob/develop/.github/workflows/build.yaml
+      title: Build Pipeline
+      icon: build
 spec:
   type: service
   lifecycle: production
-  owner: team-credit-and-payments
-  system: paymenthub
-  consumesApis: []
+  owner: group:one-acre-fund/credits-and-payments
+  system: connectors
+  consumesApis:
+    - zeebe-gateway-grpc-api
+  dependsOn:
+    - resource:default/zeebe-cluster
