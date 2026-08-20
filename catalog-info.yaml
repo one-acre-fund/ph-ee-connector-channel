@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: ph-ee-connector-channel
   title: Channel Connector
-  description: A ph connector that initiate transactions through Zeebe.
+  description: A PH connector that initiates transactions through Zeebe.
   annotations:
     github.com/project-slug: one-acre-fund/ph-ee-connector-channel
     backstage.io/kubernetes-id: ph-ee-connector-channel
