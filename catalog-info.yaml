@@ -11,6 +11,7 @@ metadata:
     backstage.io/techdocs-ref: dir:.
     sonarqube.org/project-key: one-acre-fund_ph-ee-connector-channel
     backstage.io/code-coverage: sonarqube
+    backstage.io/kubernetes-label-selector: 'app=ph-ee-connector-channel'
   tags:
     - java
     - spring-boot
@@ -37,7 +38,7 @@ metadata:
 spec:
   type: service
   lifecycle: production
-  owner: group:one-acre-fund/credits-and-payments
+  owner: group:default/credits-and-payments
   system: connectors
   consumesApis:
     - zeebe-gateway-grpc-api
