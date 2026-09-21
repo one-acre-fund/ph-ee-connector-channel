@@ -483,7 +483,8 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                         exchange.getIn().setBody(response.toString());
                         exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
                     } catch (io.camunda.zeebe.client.api.command.ClientStatusException ex) {
-                        logger.error("Zeebe workflow start failed: {}", ex.getMessage());
+                        logger.error("Zeebe workflow start failed for phone number {}: {}",
+                                primaryIdentifierVal, ex.getMessage());
                         if (NOT_FOUND.equals(ex.getStatusCode())) {
                             JSONObject errorResponse = new JSONObject();
                             errorResponse.put("error", String.format("Zeebe workflow not found for ams %s, payment " +
@@ -491,16 +492,16 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
                             errorResponse.put("details", ex.getMessage());
                             exchange.getIn().setBody(errorResponse.toString());
                             exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
-                            logger.error("Workflow not found for ams {}, payment scheme {} and tenant {}",
-                                    finalAmsVal, paymentScheme, tenantId);
+                            logger.error("Workflow not found for ams {}, payment scheme {}, tenant {} and phone number {}",
+                                    finalAmsVal, paymentScheme, tenantId, primaryIdentifierVal);
                         } else {
                             JSONObject errorResponse = new JSONObject();
                             errorResponse.put("error", "Failed to start Zeebe workflow for the moment");
                             errorResponse.put("details", ex.getMessage());
                             exchange.getIn().setBody(errorResponse.toString());
                             exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 503);
-                            logger.error("Failed to start Zeebe workflow for ams {}, payment scheme {} and tenant {}:" +
-                                    " {}", finalAmsVal, paymentScheme, tenantId, ex.getMessage());
+                            logger.error("Failed to start Zeebe workflow for ams {}, payment scheme {}, tenant {} and phone number {}:" +
+                                    " {}", finalAmsVal, paymentScheme, tenantId, primaryIdentifierVal, ex.getMessage());
                         }
 
                     }
