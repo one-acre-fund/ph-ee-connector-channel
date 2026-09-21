@@ -1,7 +1,7 @@
 Release Notes
 
 ## OAF Version 1.3.5.2-mifos-1.5.4
-        * [FD-1925] - Log phone number used to start non existing bpmn flows
+        * [FD-1915] - Log phone number used to start non existing bpmn flows
 
 ## OAF Version 1.3.5-mifos-1.5.4
         * [CP-3931] - Default to OAF when country-specific login credentials for Ops App are missing
