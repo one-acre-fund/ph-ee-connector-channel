@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.3.5.3-mifos-1.5.4
+        * [FD-1920] - Bump libphonenumber to capture new phone number formats
+
 ## OAF Version 1.3.5.2-mifos-1.5.4
         * [FD-1915] - Log phone number used to start non existing bpmn flows
 
