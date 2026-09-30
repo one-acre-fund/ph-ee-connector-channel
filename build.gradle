@@ -59,7 +59,7 @@ dependencies {
     implementation 'com.github.joschi.jackson:jackson-datatype-threetenbp:2.6.4'
     implementation "org.springdoc:springdoc-openapi-ui:1.6.11"
     implementation 'org.projectlombok:lombok:1.18.22'
-    implementation 'com.googlecode.libphonenumber:carrier:1.206'
+    implementation 'com.googlecode.libphonenumber:carrier:2.40'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     implementation 'io.micrometer:micrometer-registry-prometheus:1.8.0'
 }
