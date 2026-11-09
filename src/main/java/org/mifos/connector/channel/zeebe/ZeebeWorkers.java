@@ -1,5 +1,7 @@
 package org.mifos.connector.channel.zeebe;
 
+import org.springframework.context.event.EventListener;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import com.google.gson.Gson;
 import io.camunda.zeebe.client.ZeebeClient;
 import org.apache.camel.CamelContext;
@@ -13,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.StringReader;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -35,6 +36,9 @@ public class ZeebeWorkers {
     private ZeebeClient zeebeClient;
 
     @Autowired
+    private ZeebeWorkerDrain drain;
+
+    @Autowired
     private ProducerTemplate producerTemplate;
 
     @Autowired
@@ -46,7 +50,10 @@ public class ZeebeWorkers {
     public static final String TRANSFER_FAILED = "transferFailed";
     public static final String TRANSFER_STATE = "transferState";
 
-    @PostConstruct
+    // Workers open only once the application is ready, after Camel and the web server have
+    // started. Opened earlier, a starting pod activates jobs it cannot process yet, and a pod
+    // replaced during startup would hold them until the broker job timeout (FD-1939).
+    @EventListener(ApplicationReadyEvent.class)
     public void setupWorkers() {
         workerSendErrorToChannel();
         workerSendSuccessToChannel();
@@ -60,9 +67,9 @@ public class ZeebeWorkers {
     }
 
     private void workerSendErrorToChannel(){
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
                 .jobType("send-error-to-channel")
-                .handler((client, job) -> {
+                .handler(drain.track((client, job) -> {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
 
                     Object errorInfoVariable = job.getVariablesAsMap().get(ERROR_INFORMATION);
@@ -78,58 +85,58 @@ public class ZeebeWorkers {
                     client.newCompleteCommand(job.getKey())
                             .send()
                     ;
-                })
+                }))
                 .name("send-error-to-channel")
                 .maxJobsActive(workerMaxJobs)
-                .open();
+                .open());
     }
 
     private void workerSendSuccessToChannel(){
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
                 .jobType("send-success-to-channel")
-                .handler((client, job) -> {
+                .handler(drain.track((client, job) -> {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
                     client.newCompleteCommand(job.getKey())
                             .send()
                     ;
-                })
+                }))
                 .name("send-success-to-channel")
                 .maxJobsActive(workerMaxJobs)
-                .open();
+                .open());
     }
 
     private void workerNotifyOperator(){
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
                 .jobType("notify-operator")
-                .handler((client, job) -> {
+                .handler(drain.track((client, job) -> {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
                     client.newCompleteCommand(job.getKey())
                             .send()
                     ;
-                })
+                }))
                 .name("notify-operator")
                 .maxJobsActive(workerMaxJobs)
-                .open();
+                .open());
     }
 
     private void workerNotifyAmsFailure(){
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
                 .jobType("notify-ams-failure")
-                .handler((client, job) -> {
+                .handler(drain.track((client, job) -> {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
                     client.newCompleteCommand(job.getKey())
                             .send()
                     ;
-                })
+                }))
                 .name("notify-ams-failure")
                 .maxJobsActive(workerMaxJobs)
-                .open();
+                .open());
     }
 
     private void workerSendUnknownToChannel(){
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
                 .jobType("send-unknown-to-channel")
-                .handler((client, job) -> {
+                .handler(drain.track((client, job) -> {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
 
                     Map<String, Object> variables = job.getVariablesAsMap();
@@ -145,16 +152,16 @@ public class ZeebeWorkers {
                     client.newCompleteCommand(job.getKey())
                             .send()
                     ;
-                })
+                }))
                 .name("send-unknown-to-channel")
                 .maxJobsActive(workerMaxJobs)
-                .open();
+                .open());
     }
 
     private void workerSendPayeeSuccessToChannel(){
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
                 .jobType("send-payee-success-to-channel")
-                .handler((client, job) -> {
+                .handler(drain.track((client, job) -> {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
                     Map<String, Object> variables = job.getVariablesAsMap();
 
@@ -172,16 +179,16 @@ public class ZeebeWorkers {
                     client.newCompleteCommand(job.getKey())
                             .send()
                             .join();
-                })
+                }))
                 .name("send-payee-success-to-channel")
                 .maxJobsActive(workerMaxJobs)
-                .open();
+                .open());
     }
 
     private void workerSendPayeeFailureToChannel(){
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
                 .jobType("send-payee-failure-to-channel")
-                .handler((client, job) -> {
+                .handler(drain.track((client, job) -> {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
                     Map<String, Object> variables = job.getVariablesAsMap();
 
@@ -199,16 +206,16 @@ public class ZeebeWorkers {
                     client.newCompleteCommand(job.getKey())
                             .send()
                             .join();
-                })
+                }))
                 .name("send-payee-failure-to-channel")
                 .maxJobsActive(workerMaxJobs)
-                .open();
+                .open());
     }
 
     private void workerInvokeAcknowledgementWorkflows(){
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
                 .jobType("invoke-ack-workers")
-                .handler((client, job) -> {
+                .handler(drain.track((client, job) -> {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
                     Map<String, Object> variables = job.getVariablesAsMap();
 
@@ -223,19 +230,19 @@ public class ZeebeWorkers {
                     client.newCompleteCommand(job.getKey())
                             .send()
                             .join();
-                })
+                }))
                 .name("send-payee-failure-to-channel")
                 .maxJobsActive(workerMaxJobs)
-                .open();
+                .open());
     }
 
     /**
      * Worker to delete webhook logs.
      */
     private void workerDeleteWebhookLog() {
-        zeebeClient.newWorker()
+        drain.register(zeebeClient.newWorker()
             .jobType("delete-webhook-log")
-            .handler((client, job) -> {
+            .handler(drain.track((client, job) -> {
                 logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
                 Map<String, Object> variables = job.getVariablesAsMap();
 
@@ -246,9 +253,9 @@ public class ZeebeWorkers {
                 client.newCompleteCommand(job.getKey())
                     .send()
                     .join();
-            })
+            }))
             .name("delete-webhook-log")
             .maxJobsActive(workerMaxJobs)
-            .open();
+            .open());
     }
 }
