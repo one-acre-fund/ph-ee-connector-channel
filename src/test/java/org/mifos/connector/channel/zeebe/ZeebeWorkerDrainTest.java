@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -99,6 +100,55 @@ class ZeebeWorkerDrainTest {
         verify(client, never()).newFailCommand(anyLong());
         never.countDown();
         running.join(1000);
+    }
+
+    @Test
+    void secondShutdownEventIsIgnored() {
+        ZeebeWorkerDrain drain = new ZeebeWorkerDrain(Duration.ofSeconds(1), Duration.ofSeconds(1));
+        drain.register(worker);
+
+        drain.onApplicationEvent(closing);
+        drain.onApplicationEvent(closing);
+
+        verify(worker, times(1)).close();
+    }
+
+    @Test
+    void interruptedDrainStopsWaitingAndKeepsTheInterruptFlag() throws Exception {
+        ZeebeWorkerDrain drain = new ZeebeWorkerDrain(Duration.ofSeconds(30), Duration.ofSeconds(1));
+        CountDownLatch release = new CountDownLatch(1);
+        JobHandler tracked = drain.track((c, j) -> release.await());
+        Thread running = new Thread(() -> run(tracked));
+        running.start();
+        boolean[] interruptKept = {false};
+        Thread stopping = new Thread(() -> {
+            drain.onApplicationEvent(closing);
+            interruptKept[0] = Thread.currentThread().isInterrupted();
+        });
+        stopping.start();
+        Thread.sleep(200);
+
+        stopping.interrupt();
+        stopping.join(2000);
+
+        assertFalse(stopping.isAlive(), "drain must stop waiting when interrupted");
+        assertTrue(interruptKept[0], "drain must restore the interrupt flag");
+        release.countDown();
+        running.join(1000);
+    }
+
+    @Test
+    void failedHandBackIsLoggedNotThrown() {
+        ZeebeWorkerDrain drain = new ZeebeWorkerDrain(Duration.ofSeconds(1), Duration.ofSeconds(1));
+        when(client.newFailCommand(anyLong())).thenThrow(new IllegalStateException("broker gone"));
+        boolean[] ran = {false};
+        JobHandler tracked = drain.track((c, j) -> ran[0] = true);
+
+        drain.onApplicationEvent(closing);
+        run(tracked);
+
+        assertFalse(ran[0], "late job must not run its handler");
+        assertEquals(0, drain.inFlight());
     }
 
     private void run(JobHandler handler) {
