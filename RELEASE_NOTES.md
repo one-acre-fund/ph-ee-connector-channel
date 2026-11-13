@@ -1,5 +1,8 @@
 Release Notes
 
+## OAF Version 1.3.5.4-mifos-1.5.4
+        * [FD-1939] - Drain Zeebe jobs on shutdown and open workers once the app is ready
+
 ## OAF Version 1.3.5.3-mifos-1.5.4
         * [FD-1920] - Bump libphonenumber to capture new phone number formats
 
