@@ -22,6 +22,7 @@ import org.mifos.connector.channel.model.ValidationResponseDTO;
 import org.mifos.connector.channel.operations.TokenCache;
 import org.mifos.connector.channel.utils.AMSProps;
 import org.mifos.connector.channel.utils.AMSUtils;
+import org.mifos.connector.channel.utils.CollectionRequestValidator;
 import org.mifos.connector.channel.zeebe.ZeebeProcessStarter;
 import org.mifos.connector.common.camel.AuthProcessor;
 import org.mifos.connector.common.camel.AuthProperties;
@@ -59,6 +60,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Spliterator;
 
 import static io.grpc.Status.Code.NOT_FOUND;
@@ -413,6 +415,17 @@ public class ChannelRouteBuilder extends ErrorHandlerRouteBuilder {
 
                     String channelRequestBodyString = exchange.getIn().getBody(String.class);
                     JSONObject body = new JSONObject(channelRequestBodyString);
+                    Optional<String> validationError = CollectionRequestValidator.validate(body);
+                    if (validationError.isPresent()) {
+                        logger.error("Rejecting collection request for tenant {} with correlation id {}: {}",
+                                tenantId, clientCorrelationId, validationError.get());
+                        JSONObject errorResponse = new JSONObject();
+                        errorResponse.put("error", "Invalid collection request");
+                        errorResponse.put("details", validationError.get());
+                        exchange.getIn().setBody(errorResponse.toString());
+                        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+                        return;
+                    }
                     JSONArray payer = body.getJSONArray("payer");
                     String primaryIdentifierVal = "";
                     String  secondaryIdentifierVal = "";
