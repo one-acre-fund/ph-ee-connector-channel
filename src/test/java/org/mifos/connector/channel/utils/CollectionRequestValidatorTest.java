@@ -50,6 +50,20 @@ class CollectionRequestValidatorTest {
     }
 
     @Test
+    void rejectsPayerEntryThatIsNotAnObject() {
+        JSONObject body = request("254712345678", "100");
+        body.put("payer", new JSONArray().put("254712345678").put(party("ACCOUNTID", "123")));
+        assertRejected(body, "string key and value");
+    }
+
+    @Test
+    void rejectsPayerEntryWithNonStringKey() {
+        JSONObject body = request("254712345678", "100");
+        body.getJSONArray("payer").getJSONObject(0).put("key", 1);
+        assertRejected(body, "string key and value");
+    }
+
+    @Test
     void rejectsPayerWithoutMsisdn() {
         JSONObject body = request("254712345678", "100");
         body.put("payer", new JSONArray().put(party("ACCOUNTID", "123")).put(party("FOO", "bar")));
