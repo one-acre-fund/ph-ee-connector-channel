@@ -52,6 +52,30 @@ class PayoutRequestValidatorTest {
     }
 
     @Test
+    void validate_withNullPayeeKey_shouldReject() {
+        var request = request("254712345678", "100");
+        request.getPayee().get(1).setKey(null);
+        assertRejected(request, "key and a value");
+    }
+
+    @Test
+    void validate_withNullPayeeEntry_shouldReject() {
+        var request = request("254712345678", "100");
+        request.getPayee().add(null);
+        assertRejected(request, "key and a value");
+    }
+
+    @Test
+    void msisdnAndAccount_shouldSkipNullEntries() {
+        var payee = new ArrayList<Payer>();
+        payee.add(null);
+        payee.add(party("MSISDN", "254712345678"));
+
+        assertEquals(Optional.of("254712345678"), PayoutRequestValidator.msisdn(payee));
+        assertTrue(PayoutRequestValidator.account(payee).isEmpty());
+    }
+
+    @Test
     void validate_withoutPayee_shouldReject() {
         var request = request("254712345678", "100");
         request.setPayee(null);

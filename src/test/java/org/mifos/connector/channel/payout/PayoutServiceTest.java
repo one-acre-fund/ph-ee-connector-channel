@@ -1,5 +1,6 @@
 package org.mifos.connector.channel.payout;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.camunda.zeebe.client.api.command.ClientStatusException;
 import io.grpc.Status;
@@ -13,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 
@@ -103,6 +105,38 @@ class PayoutServiceTest {
 
         assertEquals("https://example.org/callback",
                 startedVariables("mpesa_payout_fineract-kenya", transactionId).get("callbackUrl"));
+    }
+
+    @Test
+    void startPayout_invalidCallbackUrl_shouldReject() {
+        var request = request("254712345678", "100");
+        var callback = new CustomData();
+        callback.setKey("callbackUrl");
+        callback.setValue("ftp://example.org/callback");
+        request.setCustomData(List.of(callback));
+
+        var e = assertRejected(HttpStatus.BAD_REQUEST, () -> service.startPayout(TENANT, CORRELATION_ID, null,
+                request));
+        assertTrue(e.getDetails().contains("callbackUrl"), e.getDetails());
+    }
+
+    @Test
+    void startPayout_nullTenant_shouldReject() {
+        assertRejected(HttpStatus.BAD_REQUEST, () -> service.startPayout(null, CORRELATION_ID, null,
+                request("254712345678", "100")));
+    }
+
+    @Test
+    void startPayout_unserializableRequest_shouldFailWithoutStarting() throws Exception {
+        var objectMapper = mock(ObjectMapper.class);
+        when(objectMapper.writeValueAsString(org.mockito.ArgumentMatchers.any()))
+                .thenThrow(new JsonProcessingException("boom") { });
+        var failing = new PayoutService(properties, new PaymentSchemeResolver(Map.of()), zeebeProcessStarter,
+                amsUtils, objectMapper, List.of(TENANT), true, false);
+
+        assertThrows(UncheckedIOException.class, () -> failing.startPayout(TENANT, CORRELATION_ID, null,
+                request("254712345678", "100")));
+        verify(zeebeProcessStarter, never()).startZeebeWorkflowWithTransactionId(anyString(), anyString(), anyMap());
     }
 
     @Test

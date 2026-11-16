@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Map;
 
@@ -31,8 +32,21 @@ class PaymentSchemeResolverTest {
         assertEquals(PaymentSchemeResolver.DEFAULT_PAYMENT_SCHEME, resolver.resolve("", msisdn));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"12", "abc", "+999123456789"})
+    void resolve_unparsableMsisdn_shouldUseTheDefault(String msisdn) {
+        assertEquals(PaymentSchemeResolver.DEFAULT_PAYMENT_SCHEME, resolver.resolve(null, msisdn));
+    }
+
     @Test
-    void resolve_unparsableMsisdn_shouldUseTheDefault() {
-        assertEquals(PaymentSchemeResolver.DEFAULT_PAYMENT_SCHEME, resolver.resolve(null, "12"));
+    void resolve_numberWithoutCarrier_shouldUseTheDefault() {
+        // a Nairobi landline: a valid number that no mobile carrier owns
+        assertEquals(PaymentSchemeResolver.DEFAULT_PAYMENT_SCHEME, resolver.resolve(null, "254202222222"));
+    }
+
+    @Test
+    void resolve_carrierWithoutScheme_shouldUseTheDefault() {
+        var withoutMtn = new PaymentSchemeResolver(Map.of("safaricom", "mpesa"));
+        assertEquals(PaymentSchemeResolver.DEFAULT_PAYMENT_SCHEME, withoutMtn.resolve(null, "256772123456"));
     }
 }
