@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.mifos.connector.channel.camel.config.CamelProperties.CLIENTCORRELATIONID;
+import static org.mifos.connector.channel.zeebe.ZeebeVariables.TRANSACTION_ID;
 
 @RestController
 public class TransactionApiController implements TransactionApi {
@@ -37,11 +38,13 @@ public class TransactionApiController implements TransactionApi {
     }
 
     @Override
-    public void transactionResolve(String requestBody) throws JsonProcessingException {
+    public void transactionResolve(String transactionId, String requestBody) throws JsonProcessingException {
+        // The route publishes the operator's resolution with the transaction id as the correlation key
         Headers headers = new Headers.HeaderBuilder()
+                .addHeader(TRANSACTION_ID, transactionId)
                 .build();
         Exchange exchange = SpringWrapperUtil.getDefaultWrappedExchange(producerTemplate.getCamelContext(),
-                null, requestBody);
+                headers, requestBody);
         producerTemplate.send("direct:post-transaction-resolve", exchange);
 
     }

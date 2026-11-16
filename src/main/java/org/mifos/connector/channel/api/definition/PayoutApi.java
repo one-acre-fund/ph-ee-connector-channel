@@ -12,9 +12,16 @@ import static org.mifos.connector.channel.camel.config.CamelProperties.PAYMENT_S
 public interface PayoutApi {
 
     /**
-     * Starts a payout to a customer's mobile money wallet on any scheme. Always asynchronous: answers 202 with the
-     * transaction id. The same X-CorrelationID for the same tenant always gives the same transaction id, and the
-     * provider never pays the same transaction id twice.
+     * Starts a payout to a customer's mobile money wallet on any scheme. Always asynchronous. The same X-CorrelationID
+     * for the same tenant always gives the same transaction id, and that transaction id is claimed in Redis before the
+     * workflow starts, so a resent request never starts a second payout (for {@code payout.claim-ttl}, 30 days).
+     *
+     * <ul>
+     *   <li>202 {@code STARTED}: the payout workflow was started</li>
+     *   <li>409 {@code DUPLICATE}: already submitted; nothing new was started</li>
+     *   <li>503 {@code UNCONFIRMED}: the start was not confirmed; check the transaction id before retrying</li>
+     *   <li>400/403/404/503 {@code REJECTED}: nothing was started</li>
+     * </ul>
      */
     @PostMapping("/channel/payout")
     ResponseEntity<PayoutResponseDTO> payout(@RequestHeader("Platform-TenantId") String tenant,

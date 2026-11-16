@@ -25,6 +25,7 @@ public class PayoutApiController implements PayoutApi {
 
     @ExceptionHandler(PayoutRejectedException.class)
     ResponseEntity<PayoutResponseDTO> rejected(PayoutRejectedException e) {
-        return ResponseEntity.status(e.getStatus()).body(PayoutResponseDTO.rejected(e.getMessage(), e.getDetails()));
+        return ResponseEntity.status(e.getStatus()).body(PayoutResponseDTO.notStarted(e.getTransactionId(),
+                e.getOutcome(), e.getMessage(), e.getDetails()));
     }
 }

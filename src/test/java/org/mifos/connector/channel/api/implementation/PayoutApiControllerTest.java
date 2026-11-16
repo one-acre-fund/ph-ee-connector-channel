@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mifos.connector.channel.model.PayoutRequestDTO;
 import org.mifos.connector.channel.payout.PayoutRejectedException;
 import org.mifos.connector.channel.payout.PayoutService;
+import org.mifos.connector.channel.payout.PayoutStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,7 +49,28 @@ class PayoutApiControllerTest {
                         .content(BODY))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.transactionId").value("tx-1"))
+                .andExpect(jsonPath("$.status").value("STARTED"))
                 .andExpect(jsonPath("$.error").doesNotExist());
+    }
+
+    @Test
+    void payout_unconfirmedOrDuplicate_shouldAnswerWithTheTransactionIdToCheck() throws Exception {
+        when(payoutService.startPayout(any(), any(), any(), any()))
+                .thenThrow(new PayoutRejectedException(HttpStatus.SERVICE_UNAVAILABLE, PayoutStatus.UNCONFIRMED,
+                        "tx-1", "Payout start not confirmed", "Check transaction tx-1 before retrying"))
+                .thenThrow(new PayoutRejectedException(HttpStatus.CONFLICT, PayoutStatus.DUPLICATE, "tx-1",
+                        "Payout already submitted", "nothing new was started"));
+
+        for (var expected : new Object[][] {{503, "UNCONFIRMED"}, {409, "DUPLICATE"}}) {
+            mockMvc.perform(post("/channel/payout")
+                            .header("Platform-TenantId", "kenya")
+                            .header("X-CorrelationID", "corr-1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(BODY))
+                    .andExpect(status().is((int) expected[0]))
+                    .andExpect(jsonPath("$.transactionId").value("tx-1"))
+                    .andExpect(jsonPath("$.status").value(expected[1]));
+        }
     }
 
     @Test
@@ -79,6 +101,7 @@ class PayoutApiControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Zeebe workflow not found"))
                 .andExpect(jsonPath("$.details").value("NOT_FOUND"))
+                .andExpect(jsonPath("$.status").value("REJECTED"))
                 .andExpect(jsonPath("$.transactionId").doesNotExist());
     }
 

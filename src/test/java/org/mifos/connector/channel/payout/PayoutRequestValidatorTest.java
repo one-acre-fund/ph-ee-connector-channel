@@ -156,6 +156,16 @@ class PayoutRequestValidatorTest {
         assertEquals(36, id.length());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"corr-1", "corr-2", "a-much-longer-client-correlation-id-0001"})
+    void transactionId_shouldBeAVersion4UuidWithTheIetfVariant(String correlationId) {
+        // MTN MoMo answers 400 to an X-Reference-Id that is not a version 4 UUID
+        var id = java.util.UUID.fromString(PayoutRequestValidator.transactionId("kenya", correlationId));
+
+        assertEquals(4, id.version());
+        assertEquals(2, id.variant());
+    }
+
     private static void assertValid(PayoutRequestDTO request) {
         assertEquals(Optional.empty(), PayoutRequestValidator.validate(request));
     }

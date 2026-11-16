@@ -27,6 +27,8 @@ payout:
   flow: ${PAYOUT_FLOW:{ps}_payout_{ams}-{dfspid}}
   # First wait for the provider's payout result before checking its status
   timer: ${PAYOUT_TIMER:PT2M}
+  # A resent request (same tenant and X-CorrelationID) cannot start a second payout for this long. Needs Redis (redis.*)
+  claim-ttl: ${PAYOUT_CLAIM_TTL:P30D}
 
 server:
   port: 8080

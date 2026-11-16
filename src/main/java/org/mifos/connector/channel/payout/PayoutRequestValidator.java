@@ -94,11 +94,14 @@ public final class PayoutRequestValidator {
     /**
      * The payout's transaction id, derived from the tenant and the client correlation id. A resent request gets the
      * same id, which the provider uses to refuse a second payment (M-Pesa B2C OriginatorConversationID, MTN MoMo
-     * X-Reference-Id; it is a UUID, as MTN requires).
+     * X-Reference-Id). Name-based UUIDs are version 3, but MTN only accepts version 4, so the version nibble is set
+     * to 4; the id stays deterministic and the variant bits are unchanged.
      */
     public static String transactionId(String tenantId, String clientCorrelationId) {
-        return UUID.nameUUIDFromBytes(("payout:" + tenantId + ":" + clientCorrelationId)
-                .getBytes(StandardCharsets.UTF_8)).toString();
+        var nameBased = UUID.nameUUIDFromBytes(("payout:" + tenantId + ":" + clientCorrelationId)
+                .getBytes(StandardCharsets.UTF_8));
+        long version4 = (nameBased.getMostSignificantBits() & 0xFFFFFFFFFFFF0FFFL) | 0x4000L;
+        return new UUID(version4, nameBased.getLeastSignificantBits()).toString();
     }
 
     private static boolean isMsisdn(Payer party) {
