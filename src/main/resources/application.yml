@@ -19,6 +19,15 @@ mpesa:
 
 timer: "PT45S"
 
+payout:
+  # POST /channel/payout: pays money out to customer wallets on any mobile money scheme (mpesa, momo, airtel...).
+  # The scheme {ps} comes from X-Payment-Scheme or the payee MSISDN carrier (payment-schemes).
+  # Keep disabled until a payout flow is deployed
+  enabled: ${PAYOUT_ENABLED:false}
+  flow: ${PAYOUT_FLOW:{ps}_payout_{ams}-{dfspid}}
+  # First wait for the provider's payout result before checking its status
+  timer: ${PAYOUT_TIMER:PT2M}
+
 server:
   port: 8080
 
