@@ -1,5 +1,7 @@
 Release Notes
 
+## OAF Version 1.3.5.6-mifos-1.5.4
+        * [FD-1946] - Client refunds and payouts setup
 
 ## OAF Version 1.3.5.5-mifos-1.5.4
         * [FD-1975] - Validation for channel requests to ensure that the amount is a number and that the MSISDN is present.

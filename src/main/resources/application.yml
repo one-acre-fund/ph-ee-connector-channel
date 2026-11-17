@@ -19,6 +19,17 @@ mpesa:
 
 timer: "PT45S"
 
+payout:
+  # POST /channel/payout: pays money out to customer wallets on any mobile money scheme (mpesa, momo, airtel...).
+  # The scheme {ps} comes from X-Payment-Scheme or the payee MSISDN carrier (payment-schemes).
+  # Keep disabled until a payout flow is deployed
+  enabled: ${PAYOUT_ENABLED:false}
+  flow: ${PAYOUT_FLOW:{ps}_payout_{ams}-{dfspid}}
+  # First wait for the provider's payout result before checking its status
+  timer: ${PAYOUT_TIMER:PT2M}
+  # A resent request (same tenant and X-CorrelationID) cannot start a second payout for this long. Needs Redis (redis.*)
+  claim-ttl: ${PAYOUT_CLAIM_TTL:P30D}
+
 server:
   port: 8080
 
@@ -53,31 +64,31 @@ ams:
     - identifier: "foundationalid"
       value: "paygops"
     - identifier: "oaf"
-      value : "fineract"
+      value: "fineract"
     - identifier: "kenya"
-      value : "fineract"
+      value: "fineract"
     - identifier: "rwanda"
-      value : "fineract"
+      value: "fineract"
     - identifier: "burundi"
-      value : "fineract"
+      value: "fineract"
     - identifier: "malawi"
-      value : "fineract"
+      value: "fineract"
     - identifier: "zambia"
-      value : "fineract"
+      value: "fineract"
     - identifier: "nigeria"
-      value : "fineract"
+      value: "fineract"
     - identifier: "usa"
-      value : "fineract"
+      value: "fineract"
     - identifier: "default"
-      value : "fineract"
+      value: "fineract"
 
 zeebe:
   client:
     max-execution-threads: 1000
     evenly-allocated-max-jobs: 1000
-#    max-execution-threads: 100
-#    number-of-workers: 5
-#    evenly-allocated-max-jobs: "#{${zeebe.client.max-execution-threads} / ${zeebe.client.number-of-workers}}"
+    # max-execution-threads: 100
+    # number-of-workers: 5
+    # evenly-allocated-max-jobs: "#{${zeebe.client.max-execution-threads} / ${zeebe.client.number-of-workers}}"
   broker:
     contactpoint: "localhost:26500"
 

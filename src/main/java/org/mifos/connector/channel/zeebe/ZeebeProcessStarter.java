@@ -124,4 +124,24 @@ public class ZeebeProcessStarter {
             workflowId, transactionId, variables.get(CLIENT_CORRELATION_ID), instance.getProcessInstanceKey());
         return transactionId;
     }
+
+    /**
+     * Starts a workflow with a transaction id chosen by the caller, e.g. one derived from the client correlation id.
+     */
+    public String startZeebeWorkflowWithTransactionId(String workflowId, String transactionId,
+                                                      Map<String, Object> variables) {
+        variables.put(ZeebeVariables.TRANSACTION_ID, transactionId);
+        variables.put(ZeebeVariables.ORIGIN_DATE, Instant.now().toEpochMilli());
+
+        ProcessInstanceEvent instance = zeebeClient.newCreateInstanceCommand()
+                .bpmnProcessId(workflowId)
+                .latestVersion()
+                .variables(variables)
+                .send()
+                .join();
+
+        logger.info("zeebee workflow instance from process {} started with transactionId {} and correlation id {}, instance key: {}",
+            workflowId, transactionId, variables.get(CLIENT_CORRELATION_ID), instance.getProcessInstanceKey());
+        return transactionId;
+    }
 }

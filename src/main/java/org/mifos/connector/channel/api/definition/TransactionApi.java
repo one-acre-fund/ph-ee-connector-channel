@@ -3,6 +3,7 @@ package org.mifos.connector.channel.api.definition;
 import com.fasterxml.jackson.core.*;
 import org.mifos.connector.channel.GSMA_API.*;
 import org.mifos.connector.common.channel.dto.TransactionChannelRequestDTO;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -18,5 +19,6 @@ public interface TransactionApi {
                                    @RequestBody TransactionChannelRequestDTO requestBody) throws JsonProcessingException;
 
     @PostMapping("/channel/transaction/{" + TRANSACTION_ID + "}/resolve")
-    void transactionResolve(@RequestBody String requestBody) throws JsonProcessingException;
+    void transactionResolve(@PathVariable(TRANSACTION_ID) String transactionId,
+                            @RequestBody String requestBody) throws JsonProcessingException;
 }
