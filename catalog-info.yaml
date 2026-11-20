@@ -12,6 +12,7 @@ metadata:
     sonarqube.org/project-key: one-acre-fund_ph-ee-connector-channel
     backstage.io/code-coverage: sonarqube
     backstage.io/kubernetes-label-selector: 'app=ph-ee-connector-channel'
+    oaf.org/apm-dashboard-prod-url: "https://elastic.oneacrefund.org/app/dashboards#/view/2776a85d-32dd-4586-a8c0-d9cb1560420b?_g=h@377016c"
     oaf.org/clif-stability-prod-url: "https://elastic.oneacrefund.org/app/dashboards#/view/7de7e490-9b6b-11ef-a93c-bf057fdca424?_g=h@e886e10"
     # Surfaces the Kong tab, showing this service's routes and plugins.
     # The name is the one the Kong Ingress Controller generates from the
